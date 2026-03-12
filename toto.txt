@@ -1,0 +1,15 @@
+TODO: name update flow::
+
+1. Rename GitHub repository (remote).
+2. Update local git remote URL:
+3. git remote set-url origin <new-url>
+4. Rename local folder/project directory (optional but recommended for consistency).
+5. Update name in package.json.
+6. delete node_modules & generated
+7. Run:
+pnpm install
+pnpm generate
+pnpm build
+Verify:
+git remote -v
+pnpm dev
