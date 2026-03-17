@@ -1,0 +1,21 @@
+model ParcelTrackingLog {
+    id String @id @default(uuid(7)) @db.Uuid
+
+    parcelId String @db.Uuid
+    parcel   Parcel @relation(fields: [parcelId], references: [id], onDelete: Cascade)
+
+    status ParcelStatus
+
+    hubId String? @db.Uuid
+    hub   Hub?    @relation(fields: [hubId], references: [id])
+
+    userId String? @db.Uuid // The Admin/Rider who made the update
+    user   Admin?  @relation(fields: [userId], references: [id])
+
+    notes     String?  @db.Text
+    createdAt DateTime @default(now())
+
+    @@index([parcelId], name: "idx_tracking_log_parcel_id")
+    @@index([userId], name: "idx_tracking_log_user_id")
+    @@map("parcel_tracking_logs")
+}

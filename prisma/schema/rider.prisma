@@ -1,0 +1,17 @@
+model Rider {
+    id     String @id @default(uuid(7)) @db.Uuid
+    userId String @unique
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    presentAddress   String?
+    permanentAddress String?
+    age              Int?
+    coverage         String? // Could be linked to an Area/Zone ID later
+
+    // Deliveries handled by this rider
+    pickups    Parcel[] @relation("PickupRider")
+    deliveries Parcel[] @relation("DeliveryRider")
+
+    @@index([userId], name: "idx_rider_user_id")
+    @@map("riders")
+}

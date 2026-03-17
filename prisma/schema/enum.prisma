@@ -3,3 +3,43 @@ enum Gender {
     FEMALE
     OTHER
 }
+
+enum Role {
+    MERCHANT
+    RIDER
+    ADMIN
+    SUPER_ADMIN
+}
+
+enum ParcelStatus {
+    REQUESTED
+    PICKUP_ASSIGNED
+    PICKED_UP
+    RECEIVED_ORIGIN_HUB
+    IN_TRANSIT
+    RECEIVED_DESTINATION_HUB
+    OUT_FOR_DELIVERY
+    DELIVERED
+    CANCELLED
+}
+
+enum DeliverySpeed {
+    EXPRESS
+    STANDARD
+}
+
+enum DeliveryMethod {
+    HOME_DELIVERY
+    PICKUP_POINT
+}
+
+enum ServiceType {
+    REGULAR_PICKUP
+    PICK_AND_DROP
+}
+
+enum UserStatus {
+    ACTIVE
+    BLOCKED
+    DELETED
+}

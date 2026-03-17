@@ -1,0 +1,26 @@
+model PricingRule {
+    id String @id @default(uuid(7)) @db.Uuid
+
+    originalZoneId String @db.Uuid
+    originalZone   Zone   @relation("OriginalZone", fields: [originalZoneId], references: [id])
+
+    destinationZoneId String @db.Uuid
+    destinationZone   Zone   @relation("DestinationZone", fields: [destinationZoneId], references: [id])
+
+    categoryId String?         @db.Uuid
+    category   ParcelCategory? @relation(fields: [categoryId], references: [id])
+
+    serviceType ServiceType
+
+    // Financials & Weight constraints
+    minWeight Float
+    maxWeight Float
+    price     Decimal @db.Decimal(10, 2)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([originalZoneId], name: "idx_pricing_rule_original_zone_id")
+    @@index([destinationZoneId], name: "idx_pricing_rule_destination_zone_id")
+    @@map("pricing_rules")
+}

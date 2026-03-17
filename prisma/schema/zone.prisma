@@ -1,0 +1,13 @@
+model Zone {
+    id        String   @id @default(uuid(7)) @db.Uuid
+    name      String
+    slug      String   @unique
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    areas              Area[]
+    pricingOrigin      PricingRule[] @relation("OriginalZone")
+    pricingDestination PricingRule[] @relation("DestinationZone")
+
+    @@map("zones")
+}

@@ -1,16 +1,31 @@
 model User {
-    id            String    @id
-    name          String
-    email         String
-    emailVerified Boolean   @default(false)
-    image         String?
-    createdAt     DateTime  @default(now())
-    updatedAt     DateTime  @updatedAt
-    sessions      Session[]
-    accounts      Account[]
+    id                 String     @id
+    name               String
+    email              String
+    emailVerified      Boolean    @default(false)
+    image              String?
+    contactNumber      String?
+    gender             Gender
+    role               Role
+    status             UserStatus @default(ACTIVE) // ACTIVE, BLOCKED, etc.
+    needPasswordChange Boolean    @default(false)
+    isDeleted          Boolean    @default(false)
+    deletedAt          DateTime?
+    createdAt          DateTime   @default(now())
+    updatedAt          DateTime   @updatedAt
+
+    // Role-specific relations
+    merchantProfile Merchant?
+    riderProfile    Rider?
+    adminProfile    Admin?
+    // System relations
+
+    sessions Session[]
+    accounts Account[]
 
     @@unique([email])
-    @@map("user")
+    @@index([email], name: "idx_user_email")
+    @@map("users")
 }
 
 model Session {

@@ -1,0 +1,23 @@
+model Hub {
+    id            String @id @default(uuid(7)) @db.Uuid
+    name          String @unique
+    address       String
+    contactNumber String
+
+    managerId String? @db.Uuid
+    manager   Admin?  @relation("HubManager", fields: [managerId], references: [id])
+
+    areaId String @db.Uuid
+    area   Area   @relation(fields: [areaId], references: [id])
+
+    // Hub routing operations
+    originParcels      Parcel[]            @relation("OriginHub")
+    destinationParcels Parcel[]            @relation("DestinationHub")
+    trackingLogs       ParcelTrackingLog[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([name], name: "idx_hub_name")
+    @@map("hubs")
+}

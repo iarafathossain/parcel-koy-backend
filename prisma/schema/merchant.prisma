@@ -1,0 +1,13 @@
+model Merchant {
+    id            String @id @default(uuid(7)) @db.Uuid
+    userId        String @unique
+    user          User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+    businessName  String @db.Text
+    pickupAddress String @db.Text
+    averageRating Float  @default(0.0)
+
+    parcels Parcel[]
+
+    @@index([userId], name: "idx_merchant_user_id")
+    @@map("merchants")
+}

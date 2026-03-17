@@ -1,0 +1,60 @@
+model Parcel {
+    id         String  @id @default(uuid(7)) @db.Uuid
+    trackingId String  @unique // e.g., PKY-2026-8F21A
+    qrCodeUrl  String?
+
+    // Relations
+    merchantId String   @db.Uuid
+    merchant   Merchant @relation(fields: [merchantId], references: [id])
+
+    categoryId String         @db.Uuid
+    category   ParcelCategory @relation(fields: [categoryId], references: [id])
+
+    areaId String @db.Uuid
+    area   Area   @relation(fields: [areaId], references: [id])
+
+    // Routing & Assignment
+    pickupRiderId String? @db.Uuid
+    pickupRider   Rider?  @relation("PickupRider", fields: [pickupRiderId], references: [id])
+
+    deliveryRiderId String? @db.Uuid
+    deliveryRider   Rider?  @relation("DeliveryRider", fields: [deliveryRiderId], references: [id])
+
+    originHubId String? @db.Uuid
+    originHub   Hub?    @relation("OriginHub", fields: [originHubId], references: [id])
+
+    destinationHubId String? @db.Uuid
+    destinationHub   Hub?    @relation("DestinationHub", fields: [destinationHubId], references: [id])
+
+    // Parcel Details
+    status         ParcelStatus   @default(REQUESTED)
+    speed          DeliverySpeed
+    serviceType    ServiceType
+    deliveryMethod DeliveryMethod @default(HOME_DELIVERY)
+
+    weight    Float
+    isFragile Boolean @default(false)
+    notes     String? @db.Text
+
+    // Addresses & Contacts
+    pickupAddress         String
+    deliveryAddress       String
+    receiverName          String
+    receiverContactNumber String
+
+    // Financials
+    codAmount      Decimal @db.Decimal(10, 2) // Cash to collect from receiver
+    deliveryCharge Decimal @db.Decimal(10, 2) // Calculated fee at time of creation
+
+    // Security
+    deliveryOtp String? @db.VarChar(6)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    trackingLogs ParcelTrackingLog[]
+
+    @@index([trackingId], name: "idx_parcel_tracking_id")
+    @@index([merchantId], name: "idx_parcel_merchant_id")
+    @@map("parcels")
+}

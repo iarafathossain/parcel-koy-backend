@@ -1,0 +1,16 @@
+model Area {
+    id     String @id @default(uuid(7)) @db.Uuid
+    name   String
+    slug   String @unique
+    zoneId String @db.Uuid
+    zone   Zone   @relation(fields: [zoneId], references: [id])
+
+    hubs    Hub[]
+    parcels Parcel[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([slug], name: "idx_area_slug")
+    @@map("areas")
+}
