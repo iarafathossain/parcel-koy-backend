@@ -1,6 +1,7 @@
 model Hub {
     id            String @id @default(uuid(7)) @db.Uuid
     name          String @unique
+    slug          String @unique
     address       String
     contactNumber String
 
