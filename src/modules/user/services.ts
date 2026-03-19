@@ -79,6 +79,11 @@ const createAdmin = async (payload: CreateAdminZodSchema) => {
   }
 };
 
+/**
+ TODO: create rider service.
+ By following create-admin pattern complete create-rider route -> controller -> service
+ */
+
 export const userService = {
   createAdmin,
 };
