@@ -1,4 +1,4 @@
-model Service {
+model Speed {
     id          String  @id @default(uuid(7)) @db.Uuid
     name        String
     slug        String  @unique
@@ -11,8 +11,8 @@ model Service {
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    pricingRules PricingRule[]
+    pricingRules Pricing[]
     parcels      Parcel[]
 
-    @@map("services")
+    @@map("speeds")
 }

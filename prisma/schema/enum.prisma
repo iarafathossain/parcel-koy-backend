@@ -23,16 +23,6 @@ enum ParcelStatus {
     CANCELLED
 }
 
-enum DeliverySpeed {
-    EXPRESS
-    STANDARD
-}
-
-enum DeliveryMethod {
-    HOME_DELIVERY
-    PICKUP_POINT
-}
-
 enum UserStatus {
     ACTIVE
     BLOCKED

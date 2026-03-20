@@ -4,7 +4,7 @@ import { authRoutes } from "../modules/auth/routes";
 import { categoryRoutes } from "../modules/category/routes";
 import { hubRoutes } from "../modules/hub/routes";
 import { pricingRoutes } from "../modules/pricing/routes";
-import { serviceRoutes } from "../modules/service/routes";
+import { speedRoutes } from "../modules/speed/routes";
 import { userRoutes } from "../modules/user/routes";
 import { zoneRoutes } from "../modules/zone/routes";
 const router = Router();
@@ -24,11 +24,11 @@ router.use("/categories", categoryRoutes);
 // using hub routes
 router.use("/hubs", hubRoutes);
 
-// using service routes
-router.use("/services", serviceRoutes);
+// using speed routes
+router.use("/speeds", speedRoutes);
 
 // using pricing routes
-router.use("/pricing-rules", pricingRoutes);
+router.use("/pricing", pricingRoutes);
 
 // using zone routes
 router.use("/zones", zoneRoutes);

@@ -1,0 +1,16 @@
+model Method {
+    id          String  @id @default(uuid(7)) @db.Uuid
+    name        String
+    slug        String  @unique
+    description String?
+
+    baseFee Decimal @default(0.00) @db.Decimal(10, 2)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    pricing Pricing[]
+    parcels Parcel[]
+
+    @@map("methods")
+}

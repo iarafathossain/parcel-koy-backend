@@ -6,8 +6,8 @@ model Zone {
     updatedAt DateTime @updatedAt
 
     areas              Area[]
-    pricingOrigin      PricingRule[] @relation("OriginalZone")
-    pricingDestination PricingRule[] @relation("DestinationZone")
+    pricingOrigin      Pricing[] @relation("OriginalZone")
+    pricingDestination Pricing[] @relation("DestinationZone")
 
     @@map("zones")
 }

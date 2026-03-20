@@ -1,4 +1,4 @@
-model PricingRule {
+model Pricing {
     id String @id @default(uuid(7)) @db.Uuid
 
     originalZoneId String @db.Uuid
@@ -7,11 +7,14 @@ model PricingRule {
     destinationZoneId String @db.Uuid
     destinationZone   Zone   @relation("DestinationZone", fields: [destinationZoneId], references: [id])
 
-    categoryId String         @db.Uuid
-    category   ParcelCategory @relation(fields: [categoryId], references: [id])
+    categoryId String   @db.Uuid
+    category   Category @relation(fields: [categoryId], references: [id])
 
-    serviceId String  @db.Uuid
-    service   Service @relation(fields: [serviceId], references: [id])
+    speedId String @db.Uuid
+    speed   Speed  @relation(fields: [speedId], references: [id])
+
+    methodId String @db.Uuid
+    method   Method @relation(fields: [methodId], references: [id])
 
     // Financial & Weight constraints
     minWeight Float
@@ -21,7 +24,7 @@ model PricingRule {
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    @@index([originalZoneId], name: "idx_pricing_rule_original_zone_id")
-    @@index([destinationZoneId], name: "idx_pricing_rule_destination_zone_id")
-    @@map("pricing_rules")
+    @@index([originalZoneId], name: "idx_pricing_original_zone_id")
+    @@index([destinationZoneId], name: "idx_pricing_destination_zone_id")
+    @@map("pricing")
 }

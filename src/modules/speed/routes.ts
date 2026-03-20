@@ -35,4 +35,4 @@ router.delete(
   serviceControllers.deleteService,
 );
 
-export const serviceRoutes = router;
+export const speedRoutes = router;

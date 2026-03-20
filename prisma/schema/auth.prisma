@@ -7,7 +7,7 @@ model User {
     contactNumber      String     @db.VarChar(11)
     gender             Gender?
     role               Role       @default(MERCHANT)
-    status             UserStatus @default(ACTIVE) // ACTIVE, BLOCKED, etc.
+    status             UserStatus @default(ACTIVE)
     needPasswordChange Boolean    @default(false)
     isDeleted          Boolean    @default(false)
     deletedAt          DateTime?

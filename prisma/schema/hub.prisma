@@ -14,9 +14,9 @@ model Hub {
     area   Area   @relation(fields: [areaId], references: [id])
 
     // Hub routing operations
-    originParcels      Parcel[]            @relation("OriginHub")
-    destinationParcels Parcel[]            @relation("DestinationHub")
-    trackingLogs       ParcelTrackingLog[]
+    originParcels      Parcel[]      @relation("OriginHub")
+    destinationParcels Parcel[]      @relation("DestinationHub")
+    trackingLogs       TrackingLog[]
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt

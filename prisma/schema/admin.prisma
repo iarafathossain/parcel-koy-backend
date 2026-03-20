@@ -8,7 +8,7 @@ model Admin {
 
     managedHubs Hub[] @relation("HubManager")
 
-    trackingLogs ParcelTrackingLog[]
+    trackingLogs TrackingLog[]
 
     @@index([userId], name: "idx_admin_user_id")
     @@map("admins")

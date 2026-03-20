@@ -7,11 +7,17 @@ model Parcel {
     merchantId String   @db.Uuid
     merchant   Merchant @relation(fields: [merchantId], references: [id])
 
-    categoryId String         @db.Uuid
-    category   ParcelCategory @relation(fields: [categoryId], references: [id])
+    categoryId String   @db.Uuid
+    category   Category @relation(fields: [categoryId], references: [id])
 
     areaId String @db.Uuid
     area   Area   @relation(fields: [areaId], references: [id])
+
+    speedId String @db.Uuid
+    speed   Speed  @relation(fields: [speedId], references: [id])
+
+    methodId String @db.Uuid
+    method   Method @relation(fields: [methodId], references: [id])
 
     // Routing & Assignment
     pickupRiderId String? @db.Uuid
@@ -27,15 +33,10 @@ model Parcel {
     destinationHub   Hub?    @relation("DestinationHub", fields: [destinationHubId], references: [id])
 
     // Parcel Details
-    status         ParcelStatus   @default(REQUESTED)
-    speed          DeliverySpeed
-    serviceId      String         @db.Uuid
-    service        Service        @relation(fields: [serviceId], references: [id])
-    deliveryMethod DeliveryMethod @default(HOME_DELIVERY)
-
+    status    ParcelStatus @default(REQUESTED)
     weight    Float
-    isFragile Boolean @default(false)
-    notes     String? @db.Text
+    isFragile Boolean      @default(false)
+    notes     String?      @db.Text
 
     // Addresses & Contacts
     pickupAddress         String
@@ -53,7 +54,7 @@ model Parcel {
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    trackingLogs ParcelTrackingLog[]
+    trackingLogs TrackingLog[]
 
     @@index([trackingId], name: "idx_parcel_tracking_id")
     @@index([merchantId], name: "idx_parcel_merchant_id")

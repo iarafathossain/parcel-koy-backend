@@ -1,11 +1,11 @@
-model ParcelCategory {
+model Category {
     id         String @id @default(uuid(7)) @db.Uuid
     name       String
     slug       String @unique
     baseWeight Float
 
-    parcels      Parcel[]
-    pricingRules PricingRule[]
+    parcels Parcel[]
+    pricing Pricing[]
 
-    @@map("parcel_categories")
+    @@map("categories")
 }
