@@ -9,6 +9,20 @@ import { CreateHubPayload, UpdateHubPayload } from "./validators";
 const createHub = async (payload: CreateHubPayload) => {
   const slug = getSlug(payload.name);
 
+  // validate if hub with same slug already exists
+  const existingHub = await prisma.hub.findUnique({
+    where: {
+      slug,
+    },
+  });
+
+  if (existingHub) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      "A hub with the same name already exists",
+    );
+  }
+
   const hub = await prisma.hub.create({
     data: {
       name: payload.name,

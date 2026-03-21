@@ -9,6 +9,20 @@ import { CreateAreaPayload, UpdateAreaPayload } from "./validators";
 const createArea = async (payload: CreateAreaPayload) => {
   const slug = getSlug(payload.name);
 
+  // validate if area with same slug already exists
+  const existingArea = await prisma.area.findUnique({
+    where: {
+      slug,
+    },
+  });
+
+  if (existingArea) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      "An area with the same name already exists",
+    );
+  }
+
   const area = await prisma.area.create({
     data: {
       name: payload.name,

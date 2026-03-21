@@ -7,6 +7,20 @@ import { CreateZonePayload, UpdateZonePayload } from "./validators";
 const createZone = async (payload: CreateZonePayload) => {
   const slug = getSlug(payload.name);
 
+  // validate if zone with same slug already exists
+  const existingZone = await prisma.zone.findUnique({
+    where: {
+      slug,
+    },
+  });
+
+  if (existingZone) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      "A zone with the same name already exists",
+    );
+  }
+
   const zone = await prisma.zone.create({
     data: {
       name: payload.name,

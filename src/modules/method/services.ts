@@ -9,6 +9,20 @@ import { CreateMethodPayload, UpdateMethodPayload } from "./validators";
 const createMethod = async (payload: CreateMethodPayload) => {
   const slug = getSlug(payload.name);
 
+  // validate if method with same slug already exists
+  const existingMethod = await prisma.method.findUnique({
+    where: {
+      slug,
+    },
+  });
+
+  if (existingMethod) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      "A method with the same name already exists",
+    );
+  }
+
   const method = await prisma.method.create({
     data: {
       name: payload.name,

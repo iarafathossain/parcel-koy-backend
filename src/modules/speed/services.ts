@@ -9,6 +9,20 @@ import { CreateSpeedPayload, UpdateSpeedPayload } from "./validators";
 const createSpeed = async (payload: CreateSpeedPayload) => {
   const slug = getSlug(payload.name);
 
+  // validate if speed with same slug already exists
+  const existingSpeed = await prisma.speed.findUnique({
+    where: {
+      slug,
+    },
+  });
+
+  if (existingSpeed) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      "A speed with the same name already exists",
+    );
+  }
+
   const speed = await prisma.speed.create({
     data: {
       name: payload.name,

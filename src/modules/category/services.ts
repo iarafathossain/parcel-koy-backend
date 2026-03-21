@@ -9,6 +9,20 @@ import { CreateCategoryPayload, UpdateCategoryPayload } from "./validators";
 const createCategory = async (payload: CreateCategoryPayload) => {
   const slug = getSlug(payload.name);
 
+  // validate if category with same slug already exists
+  const existingCategory = await prisma.category.findUnique({
+    where: {
+      slug,
+    },
+  });
+
+  if (existingCategory) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      "A category with the same name already exists",
+    );
+  }
+
   const category = await prisma.category.create({
     data: {
       name: payload.name,
