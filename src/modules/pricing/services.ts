@@ -92,7 +92,7 @@ const createPricing = async (payload: CreatePricingRulePayload) => {
   if (payload.price < Number(category.baseFee)) {
     throw new AppError(
       status.BAD_REQUEST,
-      `Price must be greater than or equal to category base fee of ${category.baseFee}`,
+      `Price must be greater than or equal to category[${category.slug}] base fee of ${category.baseFee}`,
     );
   }
 
@@ -100,7 +100,7 @@ const createPricing = async (payload: CreatePricingRulePayload) => {
   if (payload.minWeight < category.baseWeight) {
     throw new AppError(
       status.BAD_REQUEST,
-      `Min weight must be greater than or equal to category base weight of ${category.baseWeight}`,
+      `Min weight must be greater than or equal to category[${category.slug}] base weight of ${category.baseWeight}`,
     );
   }
 
