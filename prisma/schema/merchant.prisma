@@ -1,6 +1,6 @@
 model Merchant {
     id            String @id @default(uuid(7)) @db.Uuid
-    userId        String @unique
+    userId        String @unique @db.Uuid
     user          User   @relation(fields: [userId], references: [id], onDelete: Cascade)
     businessName  String @db.Text
     pickupAddress String @db.Text

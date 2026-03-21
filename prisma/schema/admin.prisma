@@ -1,14 +1,12 @@
 model Admin {
     id     String @id @default(uuid(7)) @db.Uuid
-    userId String @unique
+    userId String @unique @db.Uuid
     user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
     presentAddress   String?
     permanentAddress String?
 
     managedHubs Hub[] @relation("HubManager")
-
-    trackingLogs TrackingLog[]
 
     @@index([userId], name: "idx_admin_user_id")
     @@map("admins")

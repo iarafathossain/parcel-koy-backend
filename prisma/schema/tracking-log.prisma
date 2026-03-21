@@ -9,8 +9,8 @@ model TrackingLog {
     hubId String? @db.Uuid
     hub   Hub?    @relation(fields: [hubId], references: [id])
 
-    userId String? @db.Uuid // The Admin/Rider who made the update
-    user   Admin?  @relation(fields: [userId], references: [id])
+    userId String? @db.Uuid // The Admin/Rider/Merchant who made the update
+    user   User?   @relation(fields: [userId], references: [id])
 
     notes     String?  @db.Text
     createdAt DateTime @default(now())

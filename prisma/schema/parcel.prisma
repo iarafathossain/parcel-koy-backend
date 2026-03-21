@@ -10,8 +10,11 @@ model Parcel {
     categoryId String   @db.Uuid
     category   Category @relation(fields: [categoryId], references: [id])
 
-    areaId String @db.Uuid
-    area   Area   @relation(fields: [areaId], references: [id])
+    destinationAreaId String @db.Uuid
+    destinationArea   Area   @relation("ParcelDestinationArea", fields: [destinationAreaId], references: [id])
+
+    originAreaId String @db.Uuid
+    originArea   Area   @relation("ParcelOriginArea", fields: [originAreaId], references: [id])
 
     speedId String @db.Uuid
     speed   Speed  @relation(fields: [speedId], references: [id])

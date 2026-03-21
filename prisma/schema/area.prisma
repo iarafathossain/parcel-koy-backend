@@ -5,8 +5,9 @@ model Area {
     zoneId String @db.Uuid
     zone   Zone   @relation(fields: [zoneId], references: [id])
 
-    hubs    Hub[]
-    parcels Parcel[]
+    hubs               Hub[]
+    originParcels      Parcel[] @relation("ParcelOriginArea")
+    destinationParcels Parcel[] @relation("ParcelDestinationArea")
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt

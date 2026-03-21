@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { bearer, emailOTP } from "better-auth/plugins";
+import { v7 as uuidv7 } from "uuid";
 import { envVariables } from "../config/env";
 import { Role, UserStatus } from "../generated/prisma/enums";
 import { sendEmail } from "../utils/email";
@@ -140,6 +141,9 @@ export const auth = betterAuth({
           path: "/",
         },
       },
+    },
+    database: {
+      generateId: () => uuidv7(), // Use UUIDv7 for session,user,account IDs
     },
   },
 });
