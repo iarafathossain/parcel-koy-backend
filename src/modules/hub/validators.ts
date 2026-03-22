@@ -14,7 +14,6 @@ export const createHubZodSchema = zod.object({
     .min(11, "Contact number must be at least 11 characters long")
     .max(11, "Contact number must be at most 11 characters long")
     .regex(/^[0-9]+$/, "Contact number must contain only digits"),
-  areaId: zod.uuid("Area ID must be a valid UUID"),
   managerId: zod.uuid("Manager ID must be a valid UUID").optional().nullable(),
 });
 
@@ -35,7 +34,6 @@ export const updateHubZodSchema = zod.object({
     .max(11, "Contact number must be at most 11 characters long")
     .regex(/^[0-9]+$/, "Contact number must contain only digits")
     .optional(),
-  areaId: zod.uuid("Area ID must be a valid UUID").optional(),
   managerId: zod.uuid("Manager ID must be a valid UUID").optional().nullable(),
 });
 

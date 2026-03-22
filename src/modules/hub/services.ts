@@ -29,11 +29,9 @@ const createHub = async (payload: CreateHubPayload) => {
       slug,
       address: payload.address,
       contactNumber: payload.contactNumber,
-      areaId: payload.areaId,
       managerId: payload.managerId ?? undefined,
     },
     include: {
-      area: true,
       manager: true,
     },
   });
@@ -97,10 +95,6 @@ const updateHub = async (slug: string, payload: UpdateHubPayload) => {
     updateData.contactNumber = payload.contactNumber;
   }
 
-  if (payload.areaId) {
-    updateData.areaId = payload.areaId;
-  }
-
   if (payload.managerId !== undefined) {
     updateData.managerId = payload.managerId;
   }
@@ -111,7 +105,6 @@ const updateHub = async (slug: string, payload: UpdateHubPayload) => {
     },
     data: updateData,
     include: {
-      area: true,
       manager: true,
     },
   });

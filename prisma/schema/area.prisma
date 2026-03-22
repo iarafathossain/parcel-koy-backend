@@ -5,7 +5,9 @@ model Area {
     zoneId String @db.Uuid
     zone   Zone   @relation(fields: [zoneId], references: [id])
 
-    hubs               Hub[]
+    hubID String? @db.Uuid
+    hub   Hub?    @relation("HubCoverageArea", fields: [hubID], references: [id])
+
     originParcels      Parcel[]   @relation("ParcelOriginArea")
     destinationParcels Parcel[]   @relation("ParcelDestinationArea")
     merchants          Merchant[] @relation("MerchantOriginArea")

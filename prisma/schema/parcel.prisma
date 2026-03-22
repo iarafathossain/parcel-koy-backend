@@ -1,7 +1,6 @@
 model Parcel {
-    id         String  @id @default(uuid(7)) @db.Uuid
-    trackingId String  @unique // e.g., PKY-2026-8F21A
-    qrCodeUrl  String?
+    id         String @id @default(uuid(7)) @db.Uuid
+    trackingId String @unique // e.g., PKY-2026-8F21A
 
     // Relations
     merchantId String   @db.Uuid
@@ -36,10 +35,11 @@ model Parcel {
     destinationHub   Hub?    @relation("DestinationHub", fields: [destinationHubId], references: [id])
 
     // Parcel Details
-    status    ParcelStatus @default(REQUESTED)
-    weight    Float
-    isFragile Boolean      @default(false)
-    notes     String?      @db.Text
+    status         ParcelStatus @default(REQUESTED)
+    declaredWeight Float
+    actualWeight   Float? // Updated after pickup
+    isFragile      Boolean      @default(false)
+    notes          String?      @db.Text
 
     // Addresses & Contacts
     pickupAddress         String

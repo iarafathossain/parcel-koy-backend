@@ -1,4 +1,4 @@
-import { IRequestUser } from "../user-type";
+import { IRequestUser } from "./interfaces/auth-type";
 
 declare global {
   namespace Express {

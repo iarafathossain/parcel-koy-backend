@@ -28,6 +28,7 @@ const createArea = async (payload: CreateAreaPayload) => {
       name: payload.name,
       slug,
       zoneId: payload.zoneId,
+      hubID: payload.hubId,
     },
   });
 
@@ -36,8 +37,22 @@ const createArea = async (payload: CreateAreaPayload) => {
 
 const getAllAreas = async (queryParams: IQueryParams) => {
   const queryBuilder = new QueryBuilder(prisma.area, queryParams, {
-    searchableFields: ["name", "slug", "zone.name"],
-    filterableFields: ["name", "slug", "zoneId", "zone.slug"],
+    searchableFields: [
+      "name",
+      "slug",
+      "zone.name",
+      "zone.slug",
+      "hubs.name",
+      "hubs.slug",
+    ],
+    filterableFields: [
+      "name",
+      "slug",
+      "zoneId",
+      "zone.slug",
+      "hubs.id",
+      "hubs.slug",
+    ],
   })
     .search()
     .filter()
@@ -49,7 +64,7 @@ const getAllAreas = async (queryParams: IQueryParams) => {
         hubs: true,
         parcels: true,
       },
-      ["zone"],
+      ["zone", "hubs"],
     )
     .paginate();
 
@@ -66,7 +81,7 @@ const getAreaBySlug = async (slug: string, queryParams: IQueryParams) => {
         hubs: true,
         parcels: true,
       },
-      ["zone"],
+      ["zone", "hubs"],
     );
 
   const areas = await prisma.area.findMany(
@@ -86,6 +101,10 @@ const updateArea = async (slug: string, payload: UpdateAreaPayload) => {
 
   if (payload.zoneId) {
     updateData.zoneId = payload.zoneId;
+  }
+
+  if (payload.hubId) {
+    updateData.hubID = payload.hubId;
   }
 
   const area = await prisma.area.update({

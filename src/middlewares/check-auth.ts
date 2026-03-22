@@ -49,7 +49,6 @@ export const checkAuth =
 
       if (sessionExists && sessionExists.user) {
         const user = sessionExists.user;
-
         const now = new Date();
         const expiresAt = new Date(sessionExists.expiresAt);
         const createdAt = new Date(sessionExists.createdAt);

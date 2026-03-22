@@ -10,8 +10,7 @@ model Hub {
 
     riders Rider[] @relation("HubRiders")
 
-    areaId String @db.Uuid
-    area   Area   @relation(fields: [areaId], references: [id])
+    coverageAreas Area[] @relation("HubCoverageArea")
 
     // Hub routing operations
     originParcels      Parcel[]      @relation("OriginHub")
