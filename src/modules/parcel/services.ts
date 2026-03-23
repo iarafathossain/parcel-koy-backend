@@ -4,6 +4,7 @@ import { ParcelStatus } from "../../generated/prisma/enums";
 import { prisma } from "../../libs/prisma";
 import { generateTrackingID } from "../../utils/generate-tracking-id";
 import {
+  CancelParcelByMerchantPayload,
   CreateParcelPayload,
   UpdateParcelPayload,
   UpdateParcelStatusByAdminPayload,
@@ -383,8 +384,67 @@ const updateParcelStatusByAdmin = async (
   return updatedParcel;
 };
 
+const cancelParcelByMerchant = async (
+  parcelId: string,
+  payload: CancelParcelByMerchantPayload,
+  userId: string,
+) => {
+  // check if parcel exists
+  const parcel = await prisma.parcel.findUnique({
+    where: { id: parcelId },
+    select: {
+      id: true,
+      status: true,
+      merchantId: true,
+      merchant: {
+        select: {
+          userId: true,
+        },
+      },
+    },
+  });
+
+  if (!parcel) {
+    throw new AppError(status.NOT_FOUND, "Parcel not found");
+  }
+
+  if (parcel.merchant.userId !== userId) {
+    throw new AppError(
+      status.FORBIDDEN,
+      "You are not allowed to cancel this parcel",
+    );
+  }
+
+  // only allow cancellation if parcel is in REQUESTED
+  if (parcel.status !== "REQUESTED") {
+    throw new AppError(
+      status.BAD_REQUEST,
+      "Only parcels in REQUESTED status can be cancelled",
+    );
+  }
+
+  // data to be updated
+  const data: Record<string, unknown> = {
+    status: "CANCELLED",
+    cancelledById: userId,
+    cancelledAt: new Date(),
+  };
+
+  if (payload.cancellationReason) {
+    data.cancellationReason = payload.cancellationReason;
+  }
+
+  const updatedParcel = await prisma.parcel.update({
+    where: { id: parcelId },
+    data,
+  });
+
+  return updatedParcel;
+};
+
 export const parcelServices = {
   createParcel,
   updateParcel,
   updateParcelStatusByAdmin,
+  cancelParcelByMerchant,
 };

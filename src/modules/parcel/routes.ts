@@ -3,6 +3,7 @@ import { checkAuth } from "../../middlewares/check-auth";
 import { validateRequest } from "../../middlewares/validate-request";
 import { parcelControllers } from "./controllers";
 import {
+  cancelParcelByMerchantZodSchema,
   createParcelZodSchema,
   updateParcelStatusByAdminZodSchema,
   updateParcelZodSchema,
@@ -32,6 +33,14 @@ router.patch(
   validateRequest(updateParcelStatusByAdminZodSchema),
   checkAuth("ADMIN", "SUPER_ADMIN"),
   parcelControllers.updateParcelStatusByAdmin,
+);
+
+// PATCH: /api/v1/parcels/cancel/:id - Cancel a parcel (Merchant only)
+router.patch(
+  "/cancel/:id",
+  validateRequest(cancelParcelByMerchantZodSchema),
+  checkAuth("MERCHANT"),
+  parcelControllers.cancelParcelByMerchant,
 );
 
 export const parcelRoutes = router;

@@ -77,8 +77,42 @@ const updateParcelStatusByAdmin = catchAsync(
   },
 );
 
+const cancelParcelByMerchant = catchAsync(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    if (!id) {
+      throw new AppError(status.BAD_REQUEST, "Parcel ID is required");
+    }
+    if (typeof id !== "string") {
+      throw new AppError(status.BAD_REQUEST, "Parcel ID must be a string");
+    }
+
+    const user = req.user;
+    if (!user) {
+      throw new AppError(
+        status.UNAUTHORIZED,
+        "Unauthorized Access! User not found in request",
+      );
+    }
+
+    const result = await parcelServices.cancelParcelByMerchant(
+      id,
+      req.body,
+      user.userId,
+    );
+
+    sendResponse(res, {
+      httpStatusCode: status.OK,
+      success: true,
+      message: "Parcel cancelled successfully",
+      data: result,
+    });
+  },
+);
+
 export const parcelControllers = {
   createParcel,
   updateParcel,
   updateParcelStatusByAdmin,
+  cancelParcelByMerchant,
 };

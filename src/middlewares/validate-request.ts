@@ -3,8 +3,17 @@ import * as zod from "zod";
 
 export const validateRequest = (zodSchema: zod.ZodObject) => {
   return (req: Request, res: Response, next: NextFunction) => {
-    if (req.body.data) {
-      req.body = JSON.parse(req.body.data);
+    const incomingBody = req.body ?? {};
+
+    if (
+      typeof incomingBody === "object" &&
+      incomingBody !== null &&
+      "data" in incomingBody &&
+      typeof incomingBody.data === "string"
+    ) {
+      req.body = JSON.parse(incomingBody.data);
+    } else {
+      req.body = incomingBody;
     }
 
     const validationResult = zodSchema.safeParse(req.body);

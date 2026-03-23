@@ -74,8 +74,18 @@ export const updateParcelStatusByAdminZodSchema = zod.object({
   deliveryRiderId: zod.string().uuid("Invalid Delivery Rider ID").optional(),
 });
 
+export const cancelParcelByMerchantZodSchema = zod.object({
+  cancellationReason: zod
+    .string()
+    .min(1, "Cancellation reason is required")
+    .optional(),
+});
+
 export type CreateParcelPayload = zod.infer<typeof createParcelZodSchema>;
 export type UpdateParcelPayload = zod.infer<typeof updateParcelZodSchema>;
 export type UpdateParcelStatusByAdminPayload = zod.infer<
   typeof updateParcelStatusByAdminZodSchema
+>;
+export type CancelParcelByMerchantPayload = zod.infer<
+  typeof cancelParcelByMerchantZodSchema
 >;
