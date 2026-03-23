@@ -131,7 +131,11 @@ const createParcel = async (payload: CreateParcelPayload, userId: string) => {
   return parcel;
 };
 
-const updateParcel = async (parcelId: string, payload: UpdateParcelPayload) => {
+const updateParcel = async (
+  parcelId: string,
+  payload: UpdateParcelPayload,
+  userId: string,
+) => {
   // prevent empty payload
   if (Object.keys(payload).length === 0) {
     throw new AppError(
@@ -142,10 +146,24 @@ const updateParcel = async (parcelId: string, payload: UpdateParcelPayload) => {
   // check if parcel exists
   const parcel = await prisma.parcel.findUnique({
     where: { id: parcelId },
+    include: {
+      merchant: {
+        select: {
+          userId: true,
+        },
+      },
+    },
   });
 
   if (!parcel) {
     throw new AppError(status.NOT_FOUND, "Parcel not found");
+  }
+
+  if (parcel.merchant.userId !== userId) {
+    throw new AppError(
+      status.FORBIDDEN,
+      "You are not allowed to update this parcel",
+    );
   }
 
   // if method is being updated to "pick & drop", originAreaId and pickupAddress are required
