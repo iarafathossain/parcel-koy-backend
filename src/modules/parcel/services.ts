@@ -113,10 +113,8 @@ const createParcel = async (payload: CreateParcelPayload, userId: string) => {
       methodId: payload.methodId,
       declaredWeight: payload.declaredWeight,
       isFragile: payload.isFragile,
-      notes: payload.notes,
-      ...(payload.notes
-        ? { notesById: userId, notesCreatedAt: new Date() }
-        : {}),
+      note: payload.note,
+      ...(payload.note ? { noteById: userId, noteCreatedAt: new Date() } : {}),
       pickupAddress: pickupAddress,
       deliveryAddress: payload.deliveryAddress,
       receiverName: payload.receiverName,
@@ -281,10 +279,10 @@ const updateParcel = async (
     data.speedId = payload.speedId;
   }
 
-  if (payload.notes) {
-    data.notes = payload.notes;
-    data.notesById = userId;
-    data.notesCreatedAt = new Date();
+  if (payload.note) {
+    data.note = payload.note;
+    data.noteById = userId;
+    data.noteCreatedAt = new Date();
   }
 
   if (payload.isFragile !== undefined) {

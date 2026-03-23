@@ -40,10 +40,10 @@ model Parcel {
     actualWeight   Float? // Updated after pickup
     isFragile      Boolean      @default(false)
 
-    notes          String?   @db.Text
-    notesCreatedAt DateTime?
-    notesById      String?   @db.Uuid
-    notesBy        User?     @relation("ParcelNotesBy", fields: [notesById], references: [id])
+    note          String?   @db.Text
+    noteCreatedAt DateTime?
+    noteById      String?   @db.Uuid
+    noteBy        User?     @relation("ParcelNotesBy", fields: [noteById], references: [id])
 
     cancellationReason String?   @db.Text
     cancelledAt        DateTime?
