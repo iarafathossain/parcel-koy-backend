@@ -81,6 +81,21 @@ export const cancelParcelByMerchantZodSchema = zod.object({
     .optional(),
 });
 
+export const updateParcelStatusByRiderZodSchema = zod.object({
+  status: zod.enum(
+    ["PICKED_UP", "PICKUP_FAILED", "DELIVERY_FAILED"],
+    "Invalid parcel status selected",
+  ),
+  pickupFailedReason: zod
+    .string()
+    .min(1, "Pickup failed reason is required")
+    .optional(),
+  deliveryFailedReason: zod
+    .string()
+    .min(1, "Delivery failed reason is required")
+    .optional(),
+});
+
 export type CreateParcelPayload = zod.infer<typeof createParcelZodSchema>;
 export type UpdateParcelPayload = zod.infer<typeof updateParcelZodSchema>;
 export type UpdateParcelStatusByAdminPayload = zod.infer<
@@ -88,4 +103,7 @@ export type UpdateParcelStatusByAdminPayload = zod.infer<
 >;
 export type CancelParcelByMerchantPayload = zod.infer<
   typeof cancelParcelByMerchantZodSchema
+>;
+export type UpdateParcelStatusByRiderPayload = zod.infer<
+  typeof updateParcelStatusByRiderZodSchema
 >;

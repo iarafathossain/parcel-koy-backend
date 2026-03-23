@@ -8,6 +8,7 @@ import {
   CreateParcelPayload,
   UpdateParcelPayload,
   UpdateParcelStatusByAdminPayload,
+  UpdateParcelStatusByRiderPayload,
 } from "./validators";
 
 const createParcel = async (payload: CreateParcelPayload, userId: string) => {
@@ -460,9 +461,110 @@ const cancelParcelByMerchant = async (
   return updatedParcel;
 };
 
+const updateParcelStatusByRider = async (
+  parcelId: string,
+  userId: string,
+  payload: UpdateParcelStatusByRiderPayload,
+) => {
+  // check if parcel exists
+  const parcel = await prisma.parcel.findUnique({
+    where: { id: parcelId },
+    select: {
+      id: true,
+      status: true,
+      pickupRiderId: true,
+      deliveryRiderId: true,
+    },
+  });
+
+  if (!parcel) {
+    throw new AppError(status.NOT_FOUND, "Parcel not found");
+  }
+
+  // validate the rider exists
+  const rider = await prisma.rider.findUnique({
+    where: { userId: userId },
+    select: { id: true },
+  });
+
+  if (!rider) {
+    throw new AppError(status.NOT_FOUND, "Rider not found");
+  }
+
+  // validate allowed status transitions for riders
+  const ALLOWED_TRANSITIONS_FOR_RIDERS: Record<string, string[]> = {
+    PICKUP_RIDER_ASSIGNED: ["PICKED_UP", "PICKUP_FAILED"],
+    OUT_FOR_DELIVERY: ["DELIVERY_FAILED"],
+  };
+
+  const currentStatus = parcel.status as ParcelStatus;
+
+  if (
+    !ALLOWED_TRANSITIONS_FOR_RIDERS[currentStatus]?.includes(payload.status)
+  ) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      `Invalid status transition from ${currentStatus} to ${payload.status} for riders`,
+    );
+  }
+
+  // validate rider ownership for pickup
+  if (payload.status === "PICKED_UP" || payload.status === "PICKUP_FAILED") {
+    if (parcel.pickupRiderId !== rider.id) {
+      throw new AppError(
+        status.FORBIDDEN,
+        "You are not assigned as the pickup rider for this parcel",
+      );
+    }
+  }
+  // validate rider ownership for delivery
+  if (payload.status === "DELIVERY_FAILED") {
+    if (parcel.deliveryRiderId !== rider.id) {
+      throw new AppError(
+        status.FORBIDDEN,
+        "You are not assigned as the delivery rider for this parcel",
+      );
+    }
+  }
+
+  // ensure pickup failed reason is provided if status is being updated to PICKUP_FAILED
+  if (payload.status === "PICKUP_FAILED" && !payload.pickupFailedReason) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      "Pickup failed reason is required when updating status to PICKUP_FAILED",
+    );
+  }
+
+  // ensure delivery failed reason is provided if status is being updated to DELIVERY_FAILED
+  if (payload.status === "DELIVERY_FAILED" && !payload.deliveryFailedReason) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      "Delivery failed reason is required when updating status to DELIVERY_FAILED",
+    );
+  }
+
+  const data: Record<string, unknown> = { status: payload.status };
+
+  if (payload.pickupFailedReason) {
+    data.pickupFailedReason = payload.pickupFailedReason;
+  }
+
+  if (payload.deliveryFailedReason) {
+    data.deliveryFailedReason = payload.deliveryFailedReason;
+  }
+
+  const updatedParcel = await prisma.parcel.update({
+    where: { id: parcelId },
+    data,
+  });
+
+  return updatedParcel;
+};
+
 export const parcelServices = {
   createParcel,
   updateParcel,
   updateParcelStatusByAdmin,
   cancelParcelByMerchant,
+  updateParcelStatusByRider,
 };

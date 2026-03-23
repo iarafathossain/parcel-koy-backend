@@ -6,6 +6,7 @@ import {
   cancelParcelByMerchantZodSchema,
   createParcelZodSchema,
   updateParcelStatusByAdminZodSchema,
+  updateParcelStatusByRiderZodSchema,
   updateParcelZodSchema,
 } from "./validators";
 
@@ -41,6 +42,14 @@ router.patch(
   validateRequest(cancelParcelByMerchantZodSchema),
   checkAuth("MERCHANT"),
   parcelControllers.cancelParcelByMerchant,
+);
+
+// PATCH: /api/v1/parcels/rider-status/:id - Update parcel status (Rider only)
+router.patch(
+  "/rider-status/:id",
+  validateRequest(updateParcelStatusByRiderZodSchema),
+  checkAuth("RIDER"),
+  parcelControllers.updateParcelStatusByRider,
 );
 
 export const parcelRoutes = router;

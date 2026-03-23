@@ -233,6 +233,22 @@ const loginUser = async (payload: LoginUserZodSchema) => {
     );
   }
 
+  // check if email is verified
+  if (!user.emailVerified) {
+    throw new AppError(
+      status.UNAUTHORIZED,
+      "Email is not verified. Please verify your email before logging in.",
+    );
+  }
+
+  // check if needPasswordChange flag is true, if true, prompt the user to change password before allowing access to the application
+  if (user.needPasswordChange) {
+    throw new AppError(
+      status.UNAUTHORIZED,
+      "You need to change your password before logging in. Please use the forget password option to change your password.",
+    );
+  }
+
   const accessToken = tokenUtils.getAccessToken({
     userId: user.id,
     email: user.email,

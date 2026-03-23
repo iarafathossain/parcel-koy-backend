@@ -46,6 +46,9 @@ model Parcel {
     cancelledById String? @db.Uuid
     cancelledBy   User?   @relation("ParcelCancelledBy", fields: [cancelledById], references: [id])
 
+    pickupFailedReason   String? @db.Text
+    deliveryFailedReason String? @db.Text
+
     // Addresses & Contacts
     pickupAddress         String
     deliveryAddress       String
