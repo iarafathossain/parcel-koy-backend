@@ -39,7 +39,17 @@ model Parcel {
     declaredWeight Float
     actualWeight   Float? // Updated after pickup
     isFragile      Boolean      @default(false)
-    notes          String?      @db.Text
+
+    notes          String?   @db.Text
+    notesCreatedAt DateTime?
+    notesById      String?   @db.Uuid
+    notesBy        User?     @relation("ParcelNotesBy", fields: [notesById], references: [id])
+
+    cancellationReason String?   @db.Text
+    cancelledAt        DateTime?
+
+    cancelledById String? @db.Uuid
+    cancelledBy   User?   @relation("ParcelCancelledBy", fields: [cancelledById], references: [id])
 
     // Addresses & Contacts
     pickupAddress         String

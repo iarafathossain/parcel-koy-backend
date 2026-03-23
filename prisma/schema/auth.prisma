@@ -20,9 +20,11 @@ model User {
     adminProfile    Admin?
     // System relations
 
-    sessions     Session[]
-    accounts     Account[]
-    trackingLogs TrackingLog[]
+    sessions         Session[]
+    accounts         Account[]
+    trackingLogs     TrackingLog[]
+    cancelledParcels Parcel[]      @relation("ParcelCancelledBy")
+    parcels          Parcel[]      @relation("ParcelNotesBy")
 
     @@unique([email])
     @@index([email], name: "idx_user_email")

@@ -2,7 +2,7 @@ import { Router } from "express";
 import { checkAuth } from "../../middlewares/check-auth";
 import { validateRequest } from "../../middlewares/validate-request";
 import { parcelControllers } from "./controllers";
-import { createParcelZodSchema } from "./validators";
+import { createParcelZodSchema, updateParcelZodSchema } from "./validators";
 
 const router = Router();
 
@@ -14,4 +14,12 @@ router.post(
   parcelControllers.createParcel,
 );
 
+//TODO: test this route
+// PUT: /api/v1/parcels/:id - Update an existing parcel (Merchant only)
+router.put(
+  "/:id",
+  validateRequest(updateParcelZodSchema),
+  checkAuth("MERCHANT"),
+  parcelControllers.updateParcel,
+);
 export const parcelRoutes = router;
