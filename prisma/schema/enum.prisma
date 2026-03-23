@@ -12,14 +12,26 @@ enum Role {
 }
 
 enum ParcelStatus {
+    // --- Phase 1: Creation & Pickup ---
     REQUESTED
-    PICKUP_ASSIGNED
+    PICKUP_RIDER_ASSIGNED
     PICKED_UP
-    RECEIVED_ORIGIN_HUB
+    PICKUP_FAILED
+
+    // --- Phase 2: Hub & Transit ---
+    RECEIVED_AT_ORIGIN_HUB
     IN_TRANSIT
-    RECEIVED_DESTINATION_HUB
+    RECEIVED_AT_DESTINATION_HUB
+
+    // --- Phase 3: Delivery ---
     OUT_FOR_DELIVERY
     DELIVERED
+    PARTIAL_DELIVERY
+    DELIVERY_FAILED
+
+    // --- Phase 4: Exceptions & Returns ---
+    ON_HOLD
+    RETURNED_TO_MERCHANT
     CANCELLED
 }
 

@@ -1,8 +1,13 @@
 import status from "http-status";
 import AppError from "../../errors/app-error";
+import { ParcelStatus } from "../../generated/prisma/enums";
 import { prisma } from "../../libs/prisma";
 import { generateTrackingID } from "../../utils/generate-tracking-id";
-import { CreateParcelPayload, UpdateParcelPayload } from "./validators";
+import {
+  CreateParcelPayload,
+  UpdateParcelPayload,
+  UpdateParcelStatusByAdminPayload,
+} from "./validators";
 
 const createParcel = async (payload: CreateParcelPayload, userId: string) => {
   const merchant = await prisma.merchant.findUnique({
@@ -305,7 +310,81 @@ const updateParcel = async (parcelId: string, payload: UpdateParcelPayload) => {
   return updatedParcel;
 };
 
+const updateParcelStatusByAdmin = async (
+  parcelId: string,
+  payload: UpdateParcelStatusByAdminPayload,
+) => {
+  // check if parcel exists
+  const parcel = await prisma.parcel.findUnique({
+    where: { id: parcelId },
+  });
+
+  if (!parcel) {
+    throw new AppError(status.NOT_FOUND, "Parcel not found");
+  }
+
+  const ALLOWED_TRANSITIONS: Record<ParcelStatus, ParcelStatus[]> = {
+    REQUESTED: ["PICKUP_RIDER_ASSIGNED", "CANCELLED"],
+    PICKUP_RIDER_ASSIGNED: ["PICKED_UP", "PICKUP_FAILED", "CANCELLED"], // Admin can still cancel here
+    PICKED_UP: ["RECEIVED_AT_ORIGIN_HUB"],
+    RECEIVED_AT_ORIGIN_HUB: ["IN_TRANSIT"],
+    IN_TRANSIT: ["RECEIVED_AT_DESTINATION_HUB", "ON_HOLD"],
+    ON_HOLD: ["IN_TRANSIT"], // Admin can put the parcel on hold and then take it off hold to continue transit
+    RECEIVED_AT_DESTINATION_HUB: ["OUT_FOR_DELIVERY"],
+    OUT_FOR_DELIVERY: ["DELIVERED", "PARTIAL_DELIVERY", "DELIVERY_FAILED"],
+    DELIVERY_FAILED: ["OUT_FOR_DELIVERY", "RETURNED_TO_MERCHANT"], // Admin reschedules
+
+    // Terminal states (Cannot be changed normally)
+    DELIVERED: [],
+    CANCELLED: [],
+    RETURNED_TO_MERCHANT: [],
+    PICKUP_FAILED: [],
+    PARTIAL_DELIVERY: [],
+  };
+
+  const currentStatus = parcel.status as ParcelStatus;
+
+  if (!ALLOWED_TRANSITIONS[currentStatus].includes(payload.status)) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      `Invalid status transition from ${currentStatus} to ${payload.status}`,
+    );
+  }
+
+  if (payload.status === "PICKUP_RIDER_ASSIGNED" && !payload.pickupRiderId) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      "Pickup rider ID is required when assigning a pickup rider",
+    );
+  }
+
+  if (payload.status === "OUT_FOR_DELIVERY" && !payload.deliveryRiderId) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      "Delivery rider ID is required when assigning out for delivery",
+    );
+  }
+
+  const data: Record<string, unknown> = { status: payload.status };
+
+  if (payload.pickupRiderId) {
+    data.pickupRiderId = payload.pickupRiderId;
+  }
+
+  if (payload.deliveryRiderId) {
+    data.deliveryRiderId = payload.deliveryRiderId;
+  }
+
+  const updatedParcel = await prisma.parcel.update({
+    where: { id: parcelId },
+    data,
+  });
+
+  return updatedParcel;
+};
+
 export const parcelServices = {
   createParcel,
   updateParcel,
+  updateParcelStatusByAdmin,
 };

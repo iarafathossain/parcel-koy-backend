@@ -50,5 +50,32 @@ export const updateParcelZodSchema = zod.object({
     .optional(),
 });
 
+export const updateParcelStatusByAdminZodSchema = zod.object({
+  status: zod.enum(
+    [
+      "REQUESTED",
+      "PICKUP_RIDER_ASSIGNED",
+      "PICKED_UP",
+      "PICKUP_FAILED",
+      "RECEIVED_AT_ORIGIN_HUB",
+      "IN_TRANSIT",
+      "RECEIVED_AT_DESTINATION_HUB",
+      "OUT_FOR_DELIVERY",
+      "DELIVERED",
+      "PARTIAL_DELIVERY",
+      "DELIVERY_FAILED",
+      "ON_HOLD",
+      "RETURNED_TO_MERCHANT",
+      "CANCELLED",
+    ],
+    "Invalid parcel status selected",
+  ),
+  pickupRiderId: zod.string().uuid("Invalid Pickup Rider ID").optional(),
+  deliveryRiderId: zod.string().uuid("Invalid Delivery Rider ID").optional(),
+});
+
 export type CreateParcelPayload = zod.infer<typeof createParcelZodSchema>;
 export type UpdateParcelPayload = zod.infer<typeof updateParcelZodSchema>;
+export type UpdateParcelStatusByAdminPayload = zod.infer<
+  typeof updateParcelStatusByAdminZodSchema
+>;

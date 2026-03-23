@@ -54,7 +54,31 @@ const updateParcel = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const updateParcelStatusByAdmin = catchAsync(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    if (!id) {
+      throw new AppError(status.BAD_REQUEST, "Parcel ID is required");
+    }
+    if (typeof id !== "string") {
+      throw new AppError(status.BAD_REQUEST, "Parcel ID must be a string");
+    }
+
+    const payload = req.body;
+
+    const result = await parcelServices.updateParcelStatusByAdmin(id, payload);
+
+    sendResponse(res, {
+      httpStatusCode: status.OK,
+      success: true,
+      message: "Parcel status updated successfully",
+      data: result,
+    });
+  },
+);
+
 export const parcelControllers = {
   createParcel,
   updateParcel,
+  updateParcelStatusByAdmin,
 };
