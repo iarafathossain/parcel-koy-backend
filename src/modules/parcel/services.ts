@@ -517,6 +517,15 @@ const updateParcelStatusByRider = async (
       );
     }
   }
+
+  // ensure pickup failed reason is provided if status is being updated to PICKUP_FAILED
+  if (payload.status === "PICKUP_FAILED" && !payload.pickupFailedReason) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      "Pickup failed reason is required when updating status to PICKUP_FAILED",
+    );
+  }
+
   // validate rider ownership for delivery
   if (payload.status === "DELIVERY_FAILED") {
     if (parcel.deliveryRiderId !== rider.id) {
@@ -525,6 +534,14 @@ const updateParcelStatusByRider = async (
         "You are not assigned as the delivery rider for this parcel",
       );
     }
+  }
+
+  // ensure delivery failed reason is provided if status is being updated to DELIVERY_FAILED
+  if (payload.status === "DELIVERY_FAILED" && !payload.deliveryFailedReason) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      "Delivery failed reason is required when updating status to DELIVERY_FAILED",
+    );
   }
 
   // ensure pickup failed reason is provided if status is being updated to PICKUP_FAILED
