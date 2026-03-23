@@ -14,7 +14,6 @@ router.post(
   parcelControllers.createParcel,
 );
 
-//TODO: test this route
 // PUT: /api/v1/parcels/:id - Update an existing parcel (Merchant only)
 router.put(
   "/:id",

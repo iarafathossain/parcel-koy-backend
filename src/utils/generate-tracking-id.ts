@@ -2,7 +2,7 @@ import crypto from "crypto";
 
 /**
  * Generates a secure, human-readable tracking number.
- * Format: PKY-YYMM-XXXX (e.g., PKY-2603-X7B2)
+ * Format: PKY-YYMM-XXXX (e.g., PKY-2603-X7B2LU)
  */
 export function generateTrackingID(): string {
   const prefix = "PKY";
@@ -15,7 +15,7 @@ export function generateTrackingID(): string {
   // 2. Define the safe alphabet (Excluding 0, O, 1, I, 8, B)
   // Length: 30 characters
   const safeChars = "2345679ACDEFGHJKLMNPQRSTUVWXYZ";
-  const randomLength = 4;
+  const randomLength = 6;
 
   let randomPart = "";
 

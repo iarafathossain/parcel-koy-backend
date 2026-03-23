@@ -113,8 +113,6 @@ const createParcel = async (payload: CreateParcelPayload, userId: string) => {
       methodId: payload.methodId,
       declaredWeight: payload.declaredWeight,
       isFragile: payload.isFragile,
-      note: payload.note,
-      ...(payload.note ? { noteById: userId, noteCreatedAt: new Date() } : {}),
       pickupAddress: pickupAddress,
       deliveryAddress: payload.deliveryAddress,
       receiverName: payload.receiverName,
@@ -127,11 +125,14 @@ const createParcel = async (payload: CreateParcelPayload, userId: string) => {
   return parcel;
 };
 
-const updateParcel = async (
-  parcelId: string,
-  userId: string,
-  payload: UpdateParcelPayload,
-) => {
+const updateParcel = async (parcelId: string, payload: UpdateParcelPayload) => {
+  // prevent empty payload
+  if (Object.keys(payload).length === 0) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      "At least one field must be provided for update",
+    );
+  }
   // check if parcel exists
   const parcel = await prisma.parcel.findUnique({
     where: { id: parcelId },
@@ -277,12 +278,6 @@ const updateParcel = async (
 
   if (payload.speedId) {
     data.speedId = payload.speedId;
-  }
-
-  if (payload.note) {
-    data.note = payload.note;
-    data.noteById = userId;
-    data.noteCreatedAt = new Date();
   }
 
   if (payload.isFragile !== undefined) {

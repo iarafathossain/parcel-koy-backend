@@ -1,0 +1,16 @@
+model Note {
+    id        String   @id @default(uuid(7)) @db.Uuid
+    text      String   @db.Text
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    parcelId String @db.Uuid
+    parcel   Parcel @relation(fields: [parcelId], references: [id], onDelete: Cascade)
+
+    createdById String @db.Uuid
+    createdBy   User   @relation(fields: [createdById], references: [id])
+
+    @@index([parcelId], name: "idx_note_parcel_id")
+    @@index([createdById], name: "idx_note_created_by_id")
+    @@map("notes")
+}

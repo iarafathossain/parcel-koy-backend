@@ -4,6 +4,7 @@ import { authRoutes } from "../modules/auth/routes";
 import { categoryRoutes } from "../modules/category/routes";
 import { hubRoutes } from "../modules/hub/routes";
 import { methodRoutes } from "../modules/method/routes";
+import { noteRoutes } from "../modules/note/routes";
 import { parcelRoutes } from "../modules/parcel/routes";
 import { pricingRoutes } from "../modules/pricing/routes";
 import { speedRoutes } from "../modules/speed/routes";
@@ -40,5 +41,8 @@ router.use("/zones", zoneRoutes);
 
 // using parcel routes
 router.use("/parcels", parcelRoutes);
+
+// using note routes
+router.use("/notes", noteRoutes);
 
 export const indexRoutes = router;

@@ -44,7 +44,7 @@ const updateParcel = catchAsync(async (req: Request, res: Response) => {
   }
   const payload = req.body;
 
-  const result = await parcelServices.updateParcel(id, user.userId, payload);
+  const result = await parcelServices.updateParcel(id, payload);
 
   sendResponse(res, {
     httpStatusCode: status.OK,

@@ -24,7 +24,7 @@ model User {
     accounts         Account[]
     trackingLogs     TrackingLog[]
     cancelledParcels Parcel[]      @relation("ParcelCancelledBy")
-    parcels          Parcel[]      @relation("ParcelNotesBy")
+    notes            Note[]
 
     @@unique([email])
     @@index([email], name: "idx_user_email")

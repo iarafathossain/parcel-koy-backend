@@ -13,15 +13,7 @@ export const createParcelZodSchema = zod.object({
   declaredWeight: zod
     .number()
     .positive("Declared weight must be a positive number"),
-  actualWeight: zod
-    .number()
-    .positive("Actual weight must be a positive number")
-    .optional(),
   isFragile: zod.boolean().optional(),
-  note: zod.string().optional(),
-  noteById: zod.string().uuid("Invalid User ID").optional(),
-  noteCreatedAt: zod.string().optional(),
-
   pickupAddress: zod.string().min(1, "Pickup address is required").optional(),
   deliveryAddress: zod.string().min(1, "Delivery address is required"),
   receiverName: zod.string().min(1, "Receiver name is required"),
@@ -41,12 +33,7 @@ export const updateParcelZodSchema = zod.object({
     .number()
     .positive("Declared weight must be a positive number")
     .optional(),
-  actualWeight: zod
-    .number()
-    .positive("Actual weight must be a positive number")
-    .optional(),
   isFragile: zod.boolean().optional(),
-  note: zod.string().optional(),
   pickupAddress: zod.string().min(1, "Pickup address is required").optional(),
   deliveryAddress: zod
     .string()

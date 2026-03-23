@@ -40,11 +40,6 @@ model Parcel {
     actualWeight   Float? // Updated after pickup
     isFragile      Boolean      @default(false)
 
-    note          String?   @db.Text
-    noteCreatedAt DateTime?
-    noteById      String?   @db.Uuid
-    noteBy        User?     @relation("ParcelNotesBy", fields: [noteById], references: [id])
-
     cancellationReason String?   @db.Text
     cancelledAt        DateTime?
 
@@ -68,6 +63,7 @@ model Parcel {
     updatedAt DateTime @updatedAt
 
     trackingLogs TrackingLog[]
+    notes        Note[]
 
     @@index([trackingId], name: "idx_parcel_tracking_id")
     @@index([merchantId], name: "idx_parcel_merchant_id")
