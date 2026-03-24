@@ -1,0 +1,21 @@
+model Payout {
+    id     String       @id @default(uuid(7)) @db.Uuid
+    amount Decimal      @db.Decimal(10, 2)
+    status PayoutStatus @default(PENDING)
+
+    transactionId String? @db.VarChar(300)
+    paymentMethod String?
+    adminNote     String? @db.Text
+
+    // Relations
+    merchantId String   @db.Uuid
+    merchant   Merchant @relation("MerchantPayouts", fields: [merchantId], references: [id])
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([merchantId], name: "idx_payout_merchant_id")
+    @@index([status], name: "idx_payout_status")
+    @@index([createdAt], name: "idx_payout_created_at")
+    @@map("payouts")
+}

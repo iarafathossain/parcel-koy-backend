@@ -40,3 +40,9 @@ enum UserStatus {
     BLOCKED
     DELETED
 }
+
+enum PayoutStatus {
+    PENDING
+    COMPLETED
+    REJECTED
+}

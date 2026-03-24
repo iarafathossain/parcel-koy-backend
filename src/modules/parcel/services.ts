@@ -16,12 +16,19 @@ import {
 const createParcel = async (payload: CreateParcelPayload, userId: string) => {
   const merchant = await prisma.merchant.findUnique({
     where: { userId: userId },
-    select: { id: true, originAreaId: true, pickupAddress: true },
+    select: {
+      id: true,
+      originAreaId: true,
+      pickupAddress: true,
+      balance: true,
+      creditLimit: true,
+    },
   });
 
   if (!merchant) {
     throw new AppError(status.BAD_REQUEST, "Merchant not found");
   }
+
   const merchantOriginAreaId = merchant.originAreaId;
   const merchantPickupAddress = merchant.pickupAddress;
 
@@ -108,28 +115,50 @@ const createParcel = async (payload: CreateParcelPayload, userId: string) => {
     );
   }
 
-  // create the parcel
-  const parcel = await prisma.parcel.create({
-    data: {
-      trackingId: trackingID,
-      merchantId: merchant.id,
-      categoryId: payload.categoryId,
-      destinationAreaId: payload.destinationAreaId,
-      originAreaId: originAreaId,
-      originHubId: originArea.hubID,
-      destinationHubId: destinationArea.hubID,
-      speedId: payload.speedId,
-      methodId: payload.methodId,
-      declaredWeight: payload.declaredWeight,
-      isFragile: payload.isFragile,
-      pickupAddress: pickupAddress,
-      deliveryAddress: payload.deliveryAddress,
-      receiverName: payload.receiverName,
-      receiverContactNumber: payload.receiverContactNumber,
-      codAmount: payload.codAmount,
-      deliveryCharge: deliveryCharge.price,
-    },
-  });
+  // 1. Calculate what merchant balance will become
+  const projectedBalance =
+    Number(merchant.balance) - Number(deliveryCharge.price);
+
+  // 2. The Credit Limit Check
+  if (projectedBalance < Number(merchant.creditLimit)) {
+    throw new AppError(
+      status.PAYMENT_REQUIRED,
+      `Credit limit exceeded. Your balance is ${merchant.balance} BDT. This delivery costs ${deliveryCharge.price} BDT. Please recharge your account or wait for pending deliveries to complete.`,
+    );
+  }
+
+  // create the parcel and deduct balance with delivery charge
+  const [parcel] = await prisma.$transaction([
+    prisma.parcel.create({
+      data: {
+        trackingId: trackingID,
+        merchantId: merchant.id,
+        categoryId: payload.categoryId,
+        destinationAreaId: payload.destinationAreaId,
+        originAreaId: originAreaId,
+        originHubId: originArea.hubID,
+        destinationHubId: destinationArea.hubID,
+        speedId: payload.speedId,
+        methodId: payload.methodId,
+        declaredWeight: payload.declaredWeight,
+        isFragile: payload.isFragile,
+        pickupAddress: pickupAddress,
+        deliveryAddress: payload.deliveryAddress,
+        receiverName: payload.receiverName,
+        receiverContactNumber: payload.receiverContactNumber,
+        codAmount: payload.codAmount,
+        deliveryCharge: deliveryCharge.price,
+      },
+    }),
+    prisma.merchant.update({
+      where: { id: merchant.id },
+      data: {
+        balance: {
+          decrement: deliveryCharge.price,
+        },
+      },
+    }),
+  ]);
 
   return parcel;
 };
@@ -661,17 +690,27 @@ const verifyAndDeliverParcel = async (parcelId: string, otp: string) => {
     throw new AppError(status.BAD_REQUEST, "OTP has expired");
   }
 
-  // update parcel status to DELIVERED and clear the OTP
-  const updatedParcel = await prisma.parcel.update({
-    where: { id: parcelId },
-    data: {
-      status: "DELIVERED",
-      deliveryOtp: null,
-      deliveryOtpGeneratedAt: null,
-    },
-  });
-
-  return updatedParcel;
+  // update parcel status to DELIVERED and clear the OTP and increment the merchant's balance by the COD
+  await prisma.$transaction([
+    // mark parcel as delivered and clear OTP
+    prisma.parcel.update({
+      where: { id: parcelId },
+      data: {
+        status: "DELIVERED",
+        deliveryOtp: null,
+        deliveryOtpGeneratedAt: null,
+      },
+    }),
+    // if COD, increment merchant balance by codAmount
+    prisma.merchant.update({
+      where: { id: parcel.merchantId },
+      data: {
+        balance: {
+          increment: parcel.codAmount,
+        },
+      },
+    }),
+  ]);
 };
 
 export const parcelServices = {

@@ -56,8 +56,8 @@ model Parcel {
     receiverContactNumber String
 
     // Financials
-    codAmount      Decimal @db.Decimal(10, 2) // Cash to collect from receiver
-    deliveryCharge Decimal @db.Decimal(10, 2) // Calculated fee at time of creation
+    codAmount      Decimal @db.Decimal(10, 2)
+    deliveryCharge Decimal @db.Decimal(10, 2)
 
     // Security
     deliveryOtp            String?   @db.VarChar(6)
