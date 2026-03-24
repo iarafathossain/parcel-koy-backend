@@ -8,6 +8,9 @@ model Admin {
 
     managedHubs Hub[] @relation("HubManager")
 
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
     @@index([userId], name: "idx_admin_user_id")
     @@map("admins")
 }

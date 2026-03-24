@@ -7,6 +7,7 @@ import { methodRoutes } from "../modules/method/routes";
 import { noteRoutes } from "../modules/note/routes";
 import { parcelRoutes } from "../modules/parcel/routes";
 import { pricingRoutes } from "../modules/pricing/routes";
+import { riderRoutes } from "../modules/rider/routes";
 import { speedRoutes } from "../modules/speed/routes";
 import { userRoutes } from "../modules/user/routes";
 import { zoneRoutes } from "../modules/zone/routes";
@@ -44,5 +45,8 @@ router.use("/parcels", parcelRoutes);
 
 // using note routes
 router.use("/notes", noteRoutes);
+
+// using rider routes
+router.use("/riders", riderRoutes);
 
 export const indexRoutes = router;

@@ -12,6 +12,9 @@ model Rider {
     hubId String @db.Uuid
     hub   Hub    @relation("HubRiders", fields: [hubId], references: [id])
 
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
     // Deliveries handled by this rider
     pickups    Parcel[] @relation("PickupRider")
     deliveries Parcel[] @relation("DeliveryRider")

@@ -14,6 +14,7 @@ model TrackingLog {
 
     notes     String?  @db.Text
     createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
     @@index([parcelId], name: "idx_tracking_log_parcel_id")
     @@index([userId], name: "idx_tracking_log_user_id")
