@@ -96,6 +96,10 @@ export const updateParcelStatusByRiderZodSchema = zod.object({
     .optional(),
 });
 
+export const verifyAndDeliverParcelZodSchema = zod.object({
+  otp: zod.string().min(1, "OTP is required"),
+});
+
 export type CreateParcelPayload = zod.infer<typeof createParcelZodSchema>;
 export type UpdateParcelPayload = zod.infer<typeof updateParcelZodSchema>;
 export type UpdateParcelStatusByAdminPayload = zod.infer<
@@ -106,4 +110,7 @@ export type CancelParcelByMerchantPayload = zod.infer<
 >;
 export type UpdateParcelStatusByRiderPayload = zod.infer<
   typeof updateParcelStatusByRiderZodSchema
+>;
+export type VerifyAndDeliverParcelPayload = zod.infer<
+  typeof verifyAndDeliverParcelZodSchema
 >;

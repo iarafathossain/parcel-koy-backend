@@ -49,6 +49,9 @@ export interface IEnvConfig {
   SUPER_ADMIN_GENDER: Gender;
   SUPER_ADMIN_NAME: string;
   SUPER_ADMIN_PHONE: string;
+
+  DELIVERY_MASTER_OTP: string;
+  OTP_EXPIRATION_MINUTES: string;
 }
 
 export interface IErrorSource {

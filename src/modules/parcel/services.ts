@@ -1,8 +1,10 @@
 import status from "http-status";
+import { envVariables } from "../../config/env";
 import AppError from "../../errors/app-error";
 import { ParcelStatus } from "../../generated/prisma/enums";
 import { prisma } from "../../libs/prisma";
 import { generateTrackingID } from "../../utils/generate-tracking-id";
+import { parseDurationToMs } from "../../utils/token";
 import {
   CancelParcelByMerchantPayload,
   CreateParcelPayload,
@@ -578,10 +580,106 @@ const updateParcelStatusByRider = async (
   return updatedParcel;
 };
 
+const sendDeliveryOTP = async (parcelId: string, userId: string) => {
+  // check if parcel exists
+  const parcel = await prisma.parcel.findUnique({
+    where: { id: parcelId },
+  });
+
+  if (!parcel) {
+    throw new AppError(status.NOT_FOUND, "Parcel not found");
+  }
+
+  // validate the rider exists
+  const rider = await prisma.rider.findUnique({
+    where: { userId: userId },
+    select: { id: true },
+  });
+
+  if (!rider) {
+    throw new AppError(status.NOT_FOUND, "Rider not found");
+  }
+
+  // ensure the rider is assigned as the delivery rider for this parcel
+  if (parcel.deliveryRiderId !== rider.id) {
+    throw new AppError(
+      status.FORBIDDEN,
+      "You are not assigned as the delivery rider for this parcel",
+    );
+  }
+
+  // ensure parcel is out for delivery
+  if (parcel.status !== "OUT_FOR_DELIVERY") {
+    throw new AppError(
+      status.BAD_REQUEST,
+      "OTP can only be sent for parcels that are out for delivery",
+    );
+  }
+
+  // attache the otp to the parcel
+
+  await prisma.parcel.update({
+    where: { id: parcelId },
+    data: {
+      deliveryOtp: envVariables.DELIVERY_MASTER_OTP,
+      deliveryOtpGeneratedAt: new Date(),
+    },
+  });
+};
+
+const verifyAndDeliverParcel = async (parcelId: string, otp: string) => {
+  // check if parcel exists
+  const parcel = await prisma.parcel.findUnique({
+    where: { id: parcelId },
+  });
+
+  if (!parcel) {
+    throw new AppError(status.NOT_FOUND, "Parcel not found");
+  }
+
+  // ensure parcel is out for delivery
+  if (parcel.status !== "OUT_FOR_DELIVERY") {
+    throw new AppError(
+      status.BAD_REQUEST,
+      "Parcel must be out for delivery to verify OTP",
+    );
+  }
+
+  // ensure OTP matches
+  if (parcel.deliveryOtp !== otp) {
+    throw new AppError(status.BAD_REQUEST, "Invalid OTP");
+  }
+
+  // validate otp is not expired (valid for 30 minutes)
+  const now = new Date();
+  const otpGeneratedAt = parcel.deliveryOtpGeneratedAt;
+  if (
+    !otpGeneratedAt ||
+    now.getTime() - otpGeneratedAt.getTime() >
+      parseDurationToMs(envVariables.OTP_EXPIRATION_MINUTES)
+  ) {
+    throw new AppError(status.BAD_REQUEST, "OTP has expired");
+  }
+
+  // update parcel status to DELIVERED and clear the OTP
+  const updatedParcel = await prisma.parcel.update({
+    where: { id: parcelId },
+    data: {
+      status: "DELIVERED",
+      deliveryOtp: null,
+      deliveryOtpGeneratedAt: null,
+    },
+  });
+
+  return updatedParcel;
+};
+
 export const parcelServices = {
   createParcel,
   updateParcel,
   updateParcelStatusByAdmin,
   cancelParcelByMerchant,
   updateParcelStatusByRider,
+  sendDeliveryOTP,
+  verifyAndDeliverParcel,
 };

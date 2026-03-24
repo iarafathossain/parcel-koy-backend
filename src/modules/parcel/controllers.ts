@@ -145,10 +145,61 @@ const updateParcelStatusByRider = catchAsync(
   },
 );
 
+const sendDeliveryOTP = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  if (!id) {
+    throw new AppError(status.BAD_REQUEST, "Parcel ID is required");
+  }
+  if (typeof id !== "string") {
+    throw new AppError(status.BAD_REQUEST, "Parcel ID must be a string");
+  }
+
+  const user = req.user;
+  if (!user) {
+    throw new AppError(
+      status.UNAUTHORIZED,
+      "Unauthorized Access! User not found in request",
+    );
+  }
+
+  await parcelServices.sendDeliveryOTP(id, user.userId);
+
+  sendResponse(res, {
+    httpStatusCode: status.OK,
+    success: true,
+    message: "Delivery OTP sent successfully",
+  });
+});
+
+const verifyAndDeliverParcel = catchAsync(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    if (!id) {
+      throw new AppError(status.BAD_REQUEST, "Parcel ID is required");
+    }
+    if (typeof id !== "string") {
+      throw new AppError(status.BAD_REQUEST, "Parcel ID must be a string");
+    }
+
+    const { otp } = req.body;
+
+    const result = await parcelServices.verifyAndDeliverParcel(id, otp);
+
+    sendResponse(res, {
+      httpStatusCode: status.OK,
+      success: true,
+      message: "Parcel delivered successfully",
+      data: result,
+    });
+  },
+);
+
 export const parcelControllers = {
   createParcel,
   updateParcel,
   updateParcelStatusByAdmin,
   cancelParcelByMerchant,
   updateParcelStatusByRider,
+  sendDeliveryOTP,
+  verifyAndDeliverParcel,
 };

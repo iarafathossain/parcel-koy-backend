@@ -8,6 +8,7 @@ import {
   updateParcelStatusByAdminZodSchema,
   updateParcelStatusByRiderZodSchema,
   updateParcelZodSchema,
+  verifyAndDeliverParcelZodSchema,
 } from "./validators";
 
 const router = Router();
@@ -50,6 +51,21 @@ router.patch(
   validateRequest(updateParcelStatusByRiderZodSchema),
   checkAuth("RIDER"),
   parcelControllers.updateParcelStatusByRider,
+);
+
+// POST: /api/v1/parcels/delivery-otp/:id - Send delivery OTP (Rider only)
+router.post(
+  "/delivery-otp/:id",
+  checkAuth("RIDER"),
+  parcelControllers.sendDeliveryOTP,
+);
+
+// PATCH: /api/v1/parcels/verify-delivery/:id - Verify OTP and deliver parcel (Rider only)
+router.patch(
+  "/verify-delivery/:id",
+  validateRequest(verifyAndDeliverParcelZodSchema),
+  checkAuth("RIDER"),
+  parcelControllers.verifyAndDeliverParcel,
 );
 
 export const parcelRoutes = router;
