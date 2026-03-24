@@ -1,0 +1,23 @@
+model CashCollection {
+    id     String  @id @default(uuid(7)) @db.Uuid
+    amount Decimal @db.Decimal(10, 2)
+
+    // The Rider who collected the cash
+    riderId String @db.Uuid
+    rider   Rider  @relation(fields: [riderId], references: [id])
+
+    // The Admin who recorded the cash collection
+    adminId String @db.Uuid
+    admin   Admin  @relation(fields: [adminId], references: [id])
+
+    // The Hub where the transaction occurred
+    hubId String @db.Uuid
+    hub   Hub    @relation(fields: [hubId], references: [id])
+
+    createdAt DateTime @default(now())
+
+    @@index([riderId], name: "idx_cash_rider_id")
+    @@index([adminId], name: "idx_cash_admin_id")
+    @@index([hubId], name: "idx_cash_hub_id")
+    @@map("cash_collections")
+}

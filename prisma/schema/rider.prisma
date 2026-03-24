@@ -16,8 +16,9 @@ model Rider {
     updatedAt DateTime @updatedAt
 
     // Deliveries handled by this rider
-    pickups    Parcel[] @relation("PickupRider")
-    deliveries Parcel[] @relation("DeliveryRider")
+    pickups         Parcel[]         @relation("PickupRider")
+    deliveries      Parcel[]         @relation("DeliveryRider")
+    cashCollections CashCollection[]
 
     @@index([userId], name: "idx_rider_user_id")
     @@map("riders")

@@ -17,8 +17,9 @@ model Hub {
     destinationParcels Parcel[]      @relation("DestinationHub")
     trackingLogs       TrackingLog[]
 
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+    createdAt       DateTime         @default(now())
+    updatedAt       DateTime         @updatedAt
+    cashCollections CashCollection[]
 
     @@index([name], name: "idx_hub_name")
     @@map("hubs")
