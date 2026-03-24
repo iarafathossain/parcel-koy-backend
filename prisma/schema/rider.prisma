@@ -7,6 +7,8 @@ model Rider {
     permanentAddress String?
     age              Int?
 
+    cashInHand Decimal @default(0.00) @db.Decimal(10, 2)
+
     hubId String @db.Uuid
     hub   Hub    @relation("HubRiders", fields: [hubId], references: [id])
 

@@ -658,16 +658,16 @@ const sendDeliveryOTP = async (parcelId: string, userId: string) => {
 
 const verifyAndDeliverParcel = async (parcelId: string, otp: string) => {
   // check if parcel exists
-  const parcel = await prisma.parcel.findUnique({
+  const existingParcel = await prisma.parcel.findUnique({
     where: { id: parcelId },
   });
 
-  if (!parcel) {
+  if (!existingParcel) {
     throw new AppError(status.NOT_FOUND, "Parcel not found");
   }
 
   // ensure parcel is out for delivery
-  if (parcel.status !== "OUT_FOR_DELIVERY") {
+  if (existingParcel.status !== "OUT_FOR_DELIVERY") {
     throw new AppError(
       status.BAD_REQUEST,
       "Parcel must be out for delivery to verify OTP",
@@ -675,18 +675,26 @@ const verifyAndDeliverParcel = async (parcelId: string, otp: string) => {
   }
 
   // ensure OTP matches
-  if (parcel.deliveryOtp !== otp) {
+  if (existingParcel.deliveryOtp !== otp) {
     throw new AppError(status.BAD_REQUEST, "Invalid OTP");
   }
 
   // validate otp is not expired (valid for 30 minutes)
   const now = new Date();
-  const otpGeneratedAt = parcel.deliveryOtpGeneratedAt;
+  const otpGeneratedAt = existingParcel.deliveryOtpGeneratedAt;
   if (
     !otpGeneratedAt ||
     now.getTime() - otpGeneratedAt.getTime() >
       parseDurationToMs(envVariables.OTP_EXPIRATION_MINUTES)
   ) {
+    // clear the expired OTP
+    await prisma.parcel.update({
+      where: { id: parcelId },
+      data: {
+        deliveryOtp: null,
+        deliveryOtpGeneratedAt: null,
+      },
+    });
     throw new AppError(status.BAD_REQUEST, "OTP has expired");
   }
 
@@ -703,10 +711,20 @@ const verifyAndDeliverParcel = async (parcelId: string, otp: string) => {
     }),
     //  increment merchant balance by codAmount
     prisma.merchant.update({
-      where: { id: parcel.merchantId },
+      where: { id: existingParcel.merchantId },
       data: {
         balance: {
-          increment: parcel.codAmount,
+          increment: existingParcel.codAmount,
+        },
+      },
+    }),
+
+    // increment rider's cash in hand by codAmount
+    prisma.rider.update({
+      where: { id: existingParcel.deliveryRiderId! },
+      data: {
+        cashInHand: {
+          increment: existingParcel.codAmount,
         },
       },
     }),
