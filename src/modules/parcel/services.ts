@@ -701,7 +701,7 @@ const verifyAndDeliverParcel = async (parcelId: string, otp: string) => {
         deliveryOtpGeneratedAt: null,
       },
     }),
-    // if COD, increment merchant balance by codAmount
+    //  increment merchant balance by codAmount
     prisma.merchant.update({
       where: { id: parcel.merchantId },
       data: {
