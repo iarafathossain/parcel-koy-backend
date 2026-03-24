@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { adminRoutes } from "../modules/admin/routes";
 import { areaRoutes } from "../modules/area/routes";
 import { authRoutes } from "../modules/auth/routes";
 import { categoryRoutes } from "../modules/category/routes";
@@ -37,6 +38,9 @@ router.use("/methods", methodRoutes);
 
 // using merchant routes
 router.use("/merchants", merchantRoutes);
+
+// using admin routes
+router.use("/admins", adminRoutes);
 
 // using pricing routes
 router.use("/pricing", pricingRoutes);
