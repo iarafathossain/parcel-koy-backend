@@ -64,9 +64,21 @@ const updateParcelStatusByAdmin = catchAsync(
       throw new AppError(status.BAD_REQUEST, "Parcel ID must be a string");
     }
 
+    const user = req.user;
+    if (!user) {
+      throw new AppError(
+        status.UNAUTHORIZED,
+        "Unauthorized Access! User not found in request",
+      );
+    }
+
     const payload = req.body;
 
-    const result = await parcelServices.updateParcelStatusByAdmin(id, payload);
+    const result = await parcelServices.updateParcelStatusByAdmin(
+      id,
+      payload,
+      user.userId,
+    );
 
     sendResponse(res, {
       httpStatusCode: status.OK,

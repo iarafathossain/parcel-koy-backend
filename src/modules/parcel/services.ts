@@ -22,6 +22,7 @@ const createParcel = async (payload: CreateParcelPayload, userId: string) => {
       pickupAddress: true,
       balance: true,
       creditLimit: true,
+      userId: true,
     },
   });
 
@@ -127,9 +128,9 @@ const createParcel = async (payload: CreateParcelPayload, userId: string) => {
     );
   }
 
-  // create the parcel and deduct balance with delivery charge
-  const [parcel] = await prisma.$transaction([
-    prisma.parcel.create({
+  const result = await prisma.$transaction(async (tx) => {
+    // create the parcel
+    const createdParcel = await tx.parcel.create({
       data: {
         trackingId: trackingID,
         merchantId: merchant.id,
@@ -149,18 +150,29 @@ const createParcel = async (payload: CreateParcelPayload, userId: string) => {
         codAmount: payload.codAmount,
         deliveryCharge: deliveryCharge.price,
       },
-    }),
-    prisma.merchant.update({
+    });
+
+    // deduct the delivery charge from merchant balance
+    await tx.merchant.update({
       where: { id: merchant.id },
       data: {
         balance: {
           decrement: deliveryCharge.price,
         },
       },
-    }),
-  ]);
+    });
 
-  return parcel;
+    await tx.trackingLog.create({
+      data: {
+        parcelId: createdParcel.id,
+        userId: merchant.userId,
+        status: "REQUESTED",
+        description: "Parcel created and awaiting pickup rider assignment",
+      },
+    });
+  });
+
+  return result;
 };
 
 const updateParcel = async (
@@ -364,6 +376,7 @@ const updateParcel = async (
 const updateParcelStatusByAdmin = async (
   parcelId: string,
   payload: UpdateParcelStatusByAdminPayload,
+  userId: string,
 ) => {
   // check if parcel exists
   const parcel = await prisma.parcel.findUnique({
@@ -426,9 +439,22 @@ const updateParcelStatusByAdmin = async (
     data.deliveryRiderId = payload.deliveryRiderId;
   }
 
-  const updatedParcel = await prisma.parcel.update({
-    where: { id: parcelId },
-    data,
+  // update the parcel and add a tracking log for the status change
+  const updatedParcel = await prisma.$transaction(async (tx) => {
+    const updated = await tx.parcel.update({
+      where: { id: parcelId },
+      data,
+    });
+
+    await tx.trackingLog.create({
+      data: {
+        parcelId: parcelId,
+        userId: userId,
+        status: payload.status,
+        description: `Parcel status updated to ${payload.status} by admin`,
+      },
+    });
+    return updated;
   });
 
   return updatedParcel;
@@ -484,9 +510,23 @@ const cancelParcelByMerchant = async (
     data.cancellationReason = payload.cancellationReason;
   }
 
-  const updatedParcel = await prisma.parcel.update({
-    where: { id: parcelId },
-    data,
+  // update the parcel and add a tracking log for the cancellation
+  const updatedParcel = await prisma.$transaction(async (tx) => {
+    const updated = await tx.parcel.update({
+      where: { id: parcelId },
+      data,
+    });
+
+    await tx.trackingLog.create({
+      data: {
+        parcelId: parcelId,
+        userId: userId,
+        status: "CANCELLED",
+        description: `Parcel cancelled by merchant. Reason: ${payload.cancellationReason || "No reason provided"}`,
+      },
+    });
+
+    return updated;
   });
 
   return updatedParcel;
@@ -601,9 +641,25 @@ const updateParcelStatusByRider = async (
     data.deliveryFailedReason = payload.deliveryFailedReason;
   }
 
-  const updatedParcel = await prisma.parcel.update({
-    where: { id: parcelId },
-    data,
+  // update the parcel and add a tracking log for the status change
+  const updatedParcel = await prisma.$transaction(async (tx) => {
+    const updated = await tx.parcel.update({
+      where: { id: parcelId },
+      data,
+    });
+
+    await tx.trackingLog.create({
+      data: {
+        parcelId: parcelId,
+        userId: userId,
+        status: payload.status,
+        description: `Parcel status updated to ${payload.status} by rider. ${
+          payload.pickupFailedReason || payload.deliveryFailedReason
+        }`,
+      },
+    });
+
+    return updated;
   });
 
   return updatedParcel;
@@ -674,6 +730,15 @@ const verifyAndDeliverParcel = async (parcelId: string, otp: string) => {
     );
   }
 
+  // check if the rider exists
+  const rider = await prisma.rider.findUnique({
+    where: { id: existingParcel.deliveryRiderId! },
+  });
+
+  if (!rider) {
+    throw new AppError(status.NOT_FOUND, "Assigned delivery rider not found");
+  }
+
   // ensure OTP matches
   if (existingParcel.deliveryOtp !== otp) {
     throw new AppError(status.BAD_REQUEST, "Invalid OTP");
@@ -726,6 +791,16 @@ const verifyAndDeliverParcel = async (parcelId: string, otp: string) => {
         cashInHand: {
           increment: existingParcel.codAmount,
         },
+      },
+    }),
+
+    // create a tracking log for delivery
+    prisma.trackingLog.create({
+      data: {
+        parcelId: existingParcel.id,
+        userId: rider.userId,
+        status: "DELIVERED",
+        description: `Parcel delivered successfully. COD amount ${existingParcel.codAmount} BDT added to merchant balance and rider's cash in hand.`,
       },
     }),
   ]);
