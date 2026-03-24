@@ -58,4 +58,11 @@ router.get(
 // GET: /api/v1/riders/:id - Get single rider by id (Public)
 router.get("/:id", riderControllers.getSingleRiderById);
 
+// DELETE: /api/v1/riders/:id - Delete rider by id (Admin, Super Admin)
+router.delete(
+  "/:id",
+  checkAuth("ADMIN", "SUPER_ADMIN"),
+  riderControllers.deleteRiderById,
+);
+
 export const riderRoutes = router;

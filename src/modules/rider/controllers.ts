@@ -149,6 +149,26 @@ const getAllParcelByRider = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const deleteRiderById = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  if (!id) {
+    throw new AppError(status.BAD_REQUEST, "Rider ID is required");
+  }
+
+  if (typeof id !== "string") {
+    throw new AppError(status.BAD_REQUEST, "Rider ID must be a string");
+  }
+
+  await riderServices.deleteRiderById(id);
+
+  sendResponse(res, {
+    httpStatusCode: status.OK,
+    success: true,
+    message: "Rider deleted successfully",
+  });
+});
+
 export const riderControllers = {
   updateRiderProfile,
   updateRiderHub,
@@ -157,4 +177,5 @@ export const riderControllers = {
   getSingleRiderById,
   getSingleRiderByEmail,
   getAllParcelByRider,
+  deleteRiderById,
 };

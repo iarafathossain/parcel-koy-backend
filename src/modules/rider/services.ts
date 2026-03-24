@@ -378,6 +378,34 @@ const getAllParcelByRider = async (
   return await queryBuilder.execute();
 };
 
+const deleteRiderById = async (riderId: string) => {
+  const existingRider = await prisma.rider.findUnique({
+    where: {
+      id: riderId,
+    },
+    include: {
+      user: true,
+    },
+  });
+
+  if (!existingRider) {
+    throw new AppError(status.NOT_FOUND, "Rider not found");
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.rider.delete({
+      where: {
+        id: riderId,
+      },
+    });
+    await tx.user.delete({
+      where: {
+        id: existingRider.userId,
+      },
+    });
+  });
+};
+
 export const riderServices = {
   updateRiderProfile,
   updateRiderHub,
@@ -386,4 +414,5 @@ export const riderServices = {
   getSingleRiderById,
   getSingleRiderByEmail,
   getAllParcelByRider,
+  deleteRiderById,
 };
