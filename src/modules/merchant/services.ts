@@ -13,9 +13,19 @@ const updateMerchantProfile = async (
   payload: UpdateMerchantProfilePayload,
   currentUser: IRequestUser,
 ) => {
-  const { merchantId, businessName, pickupAddress, originAreaId } = payload;
+  const {
+    merchantId,
+    name,
+    image,
+    contactNumber,
+    gender,
+    businessName,
+    pickupAddress,
+    originAreaId,
+  } = payload;
 
   let targetMerchantId: string | undefined;
+  let targetUserId: string | undefined;
 
   if (currentUser.role === "MERCHANT") {
     if (merchantId) {
@@ -31,6 +41,7 @@ const updateMerchantProfile = async (
       },
       select: {
         id: true,
+        userId: true,
       },
     });
 
@@ -39,6 +50,7 @@ const updateMerchantProfile = async (
     }
 
     targetMerchantId = merchantProfile.id;
+    targetUserId = merchantProfile.userId;
   }
 
   if (currentUser.role === "ADMIN" || currentUser.role === "SUPER_ADMIN") {
@@ -49,10 +61,24 @@ const updateMerchantProfile = async (
       );
     }
 
+    const merchantProfile = await prisma.merchant.findUnique({
+      where: {
+        id: merchantId,
+      },
+      select: {
+        userId: true,
+      },
+    });
+
+    if (!merchantProfile) {
+      throw new AppError(status.NOT_FOUND, "Merchant not found");
+    }
+
     targetMerchantId = merchantId;
+    targetUserId = merchantProfile.userId;
   }
 
-  if (!targetMerchantId) {
+  if (!targetMerchantId || !targetUserId) {
     throw new AppError(
       status.BAD_REQUEST,
       "Unable to determine target merchant",
@@ -81,32 +107,60 @@ const updateMerchantProfile = async (
     }
   }
 
-  const updateData: Record<string, unknown> = {};
+  const merchantUpdateData: Record<string, unknown> = {};
+  const userUpdateData: Record<string, unknown> = {};
 
   if (businessName !== undefined) {
-    updateData.businessName = businessName;
+    merchantUpdateData.businessName = businessName;
   }
 
   if (pickupAddress !== undefined) {
-    updateData.pickupAddress = pickupAddress;
+    merchantUpdateData.pickupAddress = pickupAddress;
   }
 
   if (originAreaId !== undefined) {
-    updateData.originAreaId = originAreaId;
+    merchantUpdateData.originAreaId = originAreaId;
   }
 
-  const merchant = await prisma.merchant.update({
-    where: {
-      id: targetMerchantId,
-    },
-    data: updateData,
-    include: {
-      user: true,
-      originArea: true,
-    },
-  });
+  if (name !== undefined) {
+    userUpdateData.name = name;
+  }
 
-  return merchant;
+  if (image !== undefined) {
+    userUpdateData.image = image;
+  }
+
+  if (contactNumber !== undefined) {
+    userUpdateData.contactNumber = contactNumber;
+  }
+
+  if (gender !== undefined) {
+    userUpdateData.gender = gender;
+  }
+
+  return await prisma.$transaction(async (tx) => {
+    if (Object.keys(userUpdateData).length > 0) {
+      await tx.user.update({
+        where: { id: targetUserId },
+        data: userUpdateData,
+      });
+    }
+
+    if (Object.keys(merchantUpdateData).length > 0) {
+      await tx.merchant.update({
+        where: { id: targetMerchantId },
+        data: merchantUpdateData,
+      });
+    }
+
+    return await tx.merchant.findUnique({
+      where: { id: targetMerchantId },
+      include: {
+        user: true,
+        originArea: true,
+      },
+    });
+  });
 };
 
 const softDeleteMerchant = async (merchantId: string) => {

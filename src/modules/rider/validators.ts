@@ -3,6 +3,13 @@ import * as zod from "zod";
 export const updateRiderProfileZodSchema = zod
   .object({
     riderId: zod.uuid("Rider ID must be a valid UUID").optional(),
+    name: zod.string().min(1, "Name cannot be empty").optional(),
+    image: zod.string().url("Invalid image URL").optional(),
+    contactNumber: zod
+      .string()
+      .regex(/^[0-9]{10,15}$/, "Contact number must be 10-15 digits")
+      .optional(),
+    gender: zod.enum(["MALE", "FEMALE", "OTHER"]).optional(),
     presentAddress: zod
       .string()
       .min(1, "Present address cannot be empty")
@@ -15,12 +22,16 @@ export const updateRiderProfileZodSchema = zod
   })
   .refine(
     (data) =>
+      data.name !== undefined ||
+      data.image !== undefined ||
+      data.contactNumber !== undefined ||
+      data.gender !== undefined ||
       data.presentAddress !== undefined ||
       data.permanentAddress !== undefined ||
       data.age !== undefined,
     {
       message:
-        "At least one field is required: presentAddress, permanentAddress, or age",
+        "At least one field is required: name, image, contactNumber, gender, presentAddress, permanentAddress, or age",
     },
   );
 

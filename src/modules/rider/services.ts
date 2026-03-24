@@ -14,9 +14,19 @@ const updateRiderProfile = async (
   payload: UpdateRiderProfilePayload,
   currentUser: IRequestUser,
 ) => {
-  const { riderId, presentAddress, permanentAddress, age } = payload;
+  const {
+    riderId,
+    name,
+    image,
+    contactNumber,
+    gender,
+    presentAddress,
+    permanentAddress,
+    age,
+  } = payload;
 
   let targetRiderId: string | undefined;
+  let targetUserId: string | undefined;
 
   if (currentUser.role === "RIDER") {
     if (riderId) {
@@ -32,6 +42,7 @@ const updateRiderProfile = async (
       },
       select: {
         id: true,
+        userId: true,
       },
     });
 
@@ -40,6 +51,7 @@ const updateRiderProfile = async (
     }
 
     targetRiderId = riderProfile.id;
+    targetUserId = riderProfile.userId;
   }
 
   if (currentUser.role === "ADMIN" || currentUser.role === "SUPER_ADMIN") {
@@ -50,10 +62,24 @@ const updateRiderProfile = async (
       );
     }
 
+    const riderProfile = await prisma.rider.findUnique({
+      where: {
+        id: riderId,
+      },
+      select: {
+        userId: true,
+      },
+    });
+
+    if (!riderProfile) {
+      throw new AppError(status.NOT_FOUND, "Rider not found");
+    }
+
     targetRiderId = riderId;
+    targetUserId = riderProfile.userId;
   }
 
-  if (!targetRiderId) {
+  if (!targetRiderId || !targetUserId) {
     throw new AppError(status.BAD_REQUEST, "Unable to determine target rider");
   }
 
@@ -67,32 +93,60 @@ const updateRiderProfile = async (
     throw new AppError(status.NOT_FOUND, "Rider not found");
   }
 
-  const updateData: Record<string, unknown> = {};
+  const riderUpdateData: Record<string, unknown> = {};
+  const userUpdateData: Record<string, unknown> = {};
 
   if (presentAddress !== undefined) {
-    updateData.presentAddress = presentAddress;
+    riderUpdateData.presentAddress = presentAddress;
   }
 
   if (permanentAddress !== undefined) {
-    updateData.permanentAddress = permanentAddress;
+    riderUpdateData.permanentAddress = permanentAddress;
   }
 
   if (age !== undefined) {
-    updateData.age = age;
+    riderUpdateData.age = age;
   }
 
-  const rider = await prisma.rider.update({
-    where: {
-      id: targetRiderId,
-    },
-    data: updateData,
-    include: {
-      user: true,
-      hub: true,
-    },
-  });
+  if (name !== undefined) {
+    userUpdateData.name = name;
+  }
 
-  return rider;
+  if (image !== undefined) {
+    userUpdateData.image = image;
+  }
+
+  if (contactNumber !== undefined) {
+    userUpdateData.contactNumber = contactNumber;
+  }
+
+  if (gender !== undefined) {
+    userUpdateData.gender = gender;
+  }
+
+  return await prisma.$transaction(async (tx) => {
+    if (Object.keys(userUpdateData).length > 0) {
+      await tx.user.update({
+        where: { id: targetUserId },
+        data: userUpdateData,
+      });
+    }
+
+    if (Object.keys(riderUpdateData).length > 0) {
+      await tx.rider.update({
+        where: { id: targetRiderId },
+        data: riderUpdateData,
+      });
+    }
+
+    return await tx.rider.findUnique({
+      where: { id: targetRiderId },
+      include: {
+        user: true,
+        hub: true,
+      },
+    });
+  });
 };
 
 const updateRiderHub = async (
