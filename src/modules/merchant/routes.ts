@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { Role } from "../../generated/prisma/enums";
 import { checkAuth } from "../../middlewares/check-auth";
 import { validateRequest } from "../../middlewares/validate-request";
 import { merchantControllers } from "./controllers";
@@ -13,21 +14,21 @@ const router = Router();
 router.patch(
   "/profile",
   validateRequest(updateMerchantProfileZodSchema),
-  checkAuth("MERCHANT", "ADMIN", "SUPER_ADMIN"),
+  checkAuth(Role.MERCHANT, Role.ADMIN, Role.SUPER_ADMIN),
   merchantControllers.updateMerchantProfile,
 );
 
 // DELETE: /api/v1/merchants/:id - Soft delete merchant (Admin, Super Admin)
 router.delete(
   "/:id",
-  checkAuth("ADMIN", "SUPER_ADMIN"),
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   merchantControllers.softDeleteMerchant,
 );
 
 // GET: /api/v1/merchants - Get all merchants (Admin, Super Admin)
 router.get(
   "/",
-  checkAuth("ADMIN", "SUPER_ADMIN"),
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   merchantControllers.getAllMerchants,
 );
 
@@ -35,28 +36,28 @@ router.get(
 router.post(
   "/by-email",
   validateRequest(getSingleMerchantByEmailZodSchema),
-  checkAuth("ADMIN", "SUPER_ADMIN"),
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   merchantControllers.getSingleMerchantByEmail,
 );
 
 // GET: /api/v1/merchants/:id/parcels - Get merchant parcels (Admin, Super Admin, Rider, Merchant)
 router.get(
   "/:id/parcels",
-  checkAuth("ADMIN", "SUPER_ADMIN", "RIDER", "MERCHANT"),
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN, Role.RIDER, Role.MERCHANT),
   merchantControllers.getAllParcelByMerchantId,
 );
 
 // DELETE: /api/v1/merchants/:id/permanent - Permanent delete merchant (Admin, Super Admin)
 router.delete(
   "/:id/permanent",
-  checkAuth("ADMIN", "SUPER_ADMIN"),
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   merchantControllers.deleteMerchantById,
 );
 
 // GET: /api/v1/merchants/:id - Get single merchant by id (Rider, Admin, Super Admin, Merchant)
 router.get(
   "/:id",
-  checkAuth("RIDER", "ADMIN", "SUPER_ADMIN", "MERCHANT"),
+  checkAuth(Role.RIDER, Role.ADMIN, Role.SUPER_ADMIN, Role.MERCHANT),
   merchantControllers.getSingleMerchantById,
 );
 

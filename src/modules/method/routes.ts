@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { Role } from "../../generated/prisma/enums";
 import { checkAuth } from "../../middlewares/check-auth";
 import { validateRequest } from "../../middlewares/validate-request";
 import { methodControllers } from "./controllers";
@@ -10,7 +11,7 @@ const router = Router();
 router.post(
   "/",
   validateRequest(createMethodZodSchema),
-  checkAuth("ADMIN", "SUPER_ADMIN"),
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   methodControllers.createMethod,
 );
 
@@ -24,14 +25,14 @@ router.get("/:slug", methodControllers.getMethodBySlug);
 router.patch(
   "/:slug",
   validateRequest(updateMethodZodSchema),
-  checkAuth("ADMIN", "SUPER_ADMIN"),
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   methodControllers.updateMethod,
 );
 
 // DELETE: /api/v1/methods/:slug - Delete method by slug (Admin & Super Admin)
 router.delete(
   "/:slug",
-  checkAuth("ADMIN", "SUPER_ADMIN"),
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   methodControllers.deleteMethod,
 );
 

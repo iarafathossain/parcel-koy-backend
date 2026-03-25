@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { Role } from "../../generated/prisma/enums";
 import { checkAuth } from "../../middlewares/check-auth";
 import { validateRequest } from "../../middlewares/validate-request";
 import { areaControllers } from "./controllers";
@@ -10,7 +11,7 @@ const router = Router();
 router.post(
   "/",
   validateRequest(createAreaZodSchema),
-  checkAuth("ADMIN", "SUPER_ADMIN"),
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   areaControllers.createArea,
 );
 
@@ -24,14 +25,14 @@ router.get("/:slug", areaControllers.getAreaBySlug);
 router.patch(
   "/:slug",
   validateRequest(updateAreaZodSchema),
-  checkAuth("ADMIN", "SUPER_ADMIN"),
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   areaControllers.updateArea,
 );
 
 // DELETE: /api/v1/areas/:slug - Delete area by slug (Admin & Super Admin)
 router.delete(
   "/:slug",
-  checkAuth("ADMIN", "SUPER_ADMIN"),
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   areaControllers.deleteArea,
 );
 

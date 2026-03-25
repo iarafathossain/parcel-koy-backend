@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { Role } from "../../generated/prisma/enums";
 import { checkAuth } from "../../middlewares/check-auth";
 import { validateRequest } from "../../middlewares/validate-request";
 import { speedControllers } from "./controllers";
@@ -10,7 +11,7 @@ const router = Router();
 router.post(
   "/",
   validateRequest(createSpeedZodSchema),
-  checkAuth("ADMIN", "SUPER_ADMIN"),
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   speedControllers.createSpeed,
 );
 
@@ -24,14 +25,14 @@ router.get("/:slug", speedControllers.getSpeedBySlug);
 router.patch(
   "/:slug",
   validateRequest(updateSpeedZodSchema),
-  checkAuth("ADMIN", "SUPER_ADMIN"),
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   speedControllers.updateSpeed,
 );
 
 // DELETE: /api/v1/speeds/:slug - Delete speed by slug (Admin & Super Admin)
 router.delete(
   "/:slug",
-  checkAuth("ADMIN", "SUPER_ADMIN"),
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   speedControllers.deleteSpeed,
 );
 

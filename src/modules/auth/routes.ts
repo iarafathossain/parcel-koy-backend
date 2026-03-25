@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { Role } from "../../generated/prisma/enums";
 import { checkAuth } from "../../middlewares/check-auth";
 import { validateRequest } from "../../middlewares/validate-request";
 import { authControllers } from "./controllers";
@@ -37,21 +38,21 @@ router.post(
 // GET: api/v1/auth/me (get current logged in user)
 router.get(
   "/me",
-  checkAuth("ADMIN", "MERCHANT", "RIDER", "SUPER_ADMIN"),
+  checkAuth(Role.ADMIN, Role.MERCHANT, Role.RIDER, Role.SUPER_ADMIN),
   authControllers.getMe,
 );
 
 // GET: api/v1/auth/refresh-tokens (get new access and refresh tokens)
 router.get(
   "/refresh-tokens",
-  checkAuth("ADMIN", "MERCHANT", "RIDER", "SUPER_ADMIN"),
+  checkAuth(Role.ADMIN, Role.MERCHANT, Role.RIDER, Role.SUPER_ADMIN),
   authControllers.getNewTokens,
 );
 
 // POST: api/v1/auth/logout (logout a user)
 router.post(
   "/logout",
-  checkAuth("ADMIN", "MERCHANT", "RIDER", "SUPER_ADMIN"),
+  checkAuth(Role.ADMIN, Role.MERCHANT, Role.RIDER, Role.SUPER_ADMIN),
   authControllers.logout,
 );
 
@@ -59,7 +60,7 @@ router.post(
 router.post(
   "/change-password",
   validateRequest(changePasswordZodSchema),
-  checkAuth("ADMIN", "MERCHANT", "RIDER", "SUPER_ADMIN"),
+  checkAuth(Role.ADMIN, Role.MERCHANT, Role.RIDER, Role.SUPER_ADMIN),
   authControllers.changePassword,
 );
 

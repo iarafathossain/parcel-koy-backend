@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { Role } from "../../generated/prisma/enums";
 import { checkAuth } from "../../middlewares/check-auth";
 import { validateRequest } from "../../middlewares/validate-request";
 import { userController } from "./controllers";
@@ -10,7 +11,7 @@ const router = Router();
 router.post(
   "/create-admin",
   validateRequest(createAdminZodSchema),
-  checkAuth("SUPER_ADMIN", "ADMIN"),
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   userController.createAdmin,
 );
 
@@ -18,7 +19,7 @@ router.post(
 router.post(
   "/create-rider",
   validateRequest(createRiderZodSchema),
-  checkAuth("SUPER_ADMIN", "ADMIN"),
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   userController.createRider,
 );
 

@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { Role } from "../../generated/prisma/enums";
 import { checkAuth } from "../../middlewares/check-auth";
 import { validateRequest } from "../../middlewares/validate-request";
 import { noteControllers } from "./controllers";
@@ -10,7 +11,7 @@ const router = Router();
 router.post(
   "/",
   validateRequest(createNoteZodSchema),
-  checkAuth("ADMIN", "SUPER_ADMIN", "MERCHANT", "RIDER"),
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN, Role.MERCHANT, Role.RIDER),
   noteControllers.addNote,
 );
 
@@ -18,21 +19,21 @@ router.post(
 router.patch(
   "/:id",
   validateRequest(updateNoteZodSchema),
-  checkAuth("ADMIN", "SUPER_ADMIN"),
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   noteControllers.updateNote,
 );
 
 // DELETE: /api/v1/notes/:id - Delete note (Admin, Super Admin)
 router.delete(
   "/:id",
-  checkAuth("ADMIN", "SUPER_ADMIN"),
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   noteControllers.deleteNote,
 );
 
 // GET: /api/v1/notes/:parcelId - Get notes for a parcel (Admin, Super Admin, Merchant, Rider)
 router.get(
   "/:parcelId",
-  checkAuth("ADMIN", "SUPER_ADMIN", "MERCHANT", "RIDER"),
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN, Role.MERCHANT, Role.RIDER),
   noteControllers.getNotesByParcelId,
 );
 

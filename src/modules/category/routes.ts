@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { Role } from "../../generated/prisma/enums";
 import { checkAuth } from "../../middlewares/check-auth";
 import { validateRequest } from "../../middlewares/validate-request";
 import { categoryControllers } from "./controllers";
@@ -10,7 +11,7 @@ const router = Router();
 router.post(
   "/",
   validateRequest(createCategoryZodSchema),
-  checkAuth("ADMIN", "SUPER_ADMIN"),
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   categoryControllers.createCategory,
 );
 
@@ -24,14 +25,14 @@ router.get("/:slug", categoryControllers.getCategoryBySlug);
 router.patch(
   "/:slug",
   validateRequest(updateCategoryZodSchema),
-  checkAuth("ADMIN", "SUPER_ADMIN"),
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   categoryControllers.updateCategory,
 );
 
 // DELETE: /api/v1/categories/:slug - Delete category by slug (Admin & Super Admin)
 router.delete(
   "/:slug",
-  checkAuth("ADMIN", "SUPER_ADMIN"),
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   categoryControllers.deleteCategory,
 );
 

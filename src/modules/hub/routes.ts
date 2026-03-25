@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { Role } from "../../generated/prisma/enums";
 import { checkAuth } from "../../middlewares/check-auth";
 import { validateRequest } from "../../middlewares/validate-request";
 import { hubControllers } from "./controllers";
@@ -10,7 +11,7 @@ const router = Router();
 router.post(
   "/",
   validateRequest(createHubZodSchema),
-  checkAuth("ADMIN", "SUPER_ADMIN"),
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   hubControllers.createHub,
 );
 
@@ -24,21 +25,21 @@ router.get("/:slug", hubControllers.getHubBySlug);
 router.patch(
   "/:slug",
   validateRequest(updateHubZodSchema),
-  checkAuth("ADMIN", "SUPER_ADMIN"),
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   hubControllers.updateHub,
 );
 
 // GET: /api/v1/hubs/:hubId/cash-collections?date=today - Get cash collections for a hub (Admin, Super Admin)
 router.get(
   "/:hubId/cash-collections",
-  checkAuth("ADMIN", "SUPER_ADMIN"),
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   hubControllers.getHubCashCollections,
 );
 
 // DELETE: /api/v1/hubs/:slug - Delete hub by slug (Admin & Super Admin)
 router.delete(
   "/:slug",
-  checkAuth("ADMIN", "SUPER_ADMIN"),
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   hubControllers.deleteHub,
 );
 

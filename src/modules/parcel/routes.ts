@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { Role } from "../../generated/prisma/enums";
 import { checkAuth } from "../../middlewares/check-auth";
 import { validateRequest } from "../../middlewares/validate-request";
 import { parcelControllers } from "./controllers";
@@ -17,7 +18,7 @@ const router = Router();
 router.post(
   "/",
   validateRequest(createParcelZodSchema),
-  checkAuth("MERCHANT"),
+  checkAuth(Role.MERCHANT),
   parcelControllers.createParcel,
 );
 
@@ -25,7 +26,7 @@ router.post(
 router.put(
   "/:id",
   validateRequest(updateParcelZodSchema),
-  checkAuth("MERCHANT"),
+  checkAuth(Role.MERCHANT),
   parcelControllers.updateParcel,
 );
 
@@ -33,7 +34,7 @@ router.put(
 router.patch(
   "/status/:id",
   validateRequest(updateParcelStatusByAdminZodSchema),
-  checkAuth("ADMIN", "SUPER_ADMIN"),
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   parcelControllers.updateParcelStatusByAdmin,
 );
 
@@ -41,7 +42,7 @@ router.patch(
 router.patch(
   "/cancel/:id",
   validateRequest(cancelParcelByMerchantZodSchema),
-  checkAuth("MERCHANT"),
+  checkAuth(Role.MERCHANT),
   parcelControllers.cancelParcelByMerchant,
 );
 
@@ -49,14 +50,14 @@ router.patch(
 router.patch(
   "/rider-status/:id",
   validateRequest(updateParcelStatusByRiderZodSchema),
-  checkAuth("RIDER"),
+  checkAuth(Role.RIDER),
   parcelControllers.updateParcelStatusByRider,
 );
 
 // POST: /api/v1/parcels/delivery-otp/:id - Send delivery OTP (Rider only)
 router.post(
   "/delivery-otp/:id",
-  checkAuth("RIDER"),
+  checkAuth(Role.RIDER),
   parcelControllers.sendDeliveryOTP,
 );
 
@@ -64,7 +65,7 @@ router.post(
 router.patch(
   "/verify-delivery/:id",
   validateRequest(verifyAndDeliverParcelZodSchema),
-  checkAuth("RIDER"),
+  checkAuth(Role.RIDER),
   parcelControllers.verifyAndDeliverParcel,
 );
 

@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { Role } from "../../generated/prisma/enums";
 import { checkAuth } from "../../middlewares/check-auth";
 import { validateRequest } from "../../middlewares/validate-request";
 import { pricingControllers } from "./controllers";
@@ -10,7 +11,7 @@ const router = Router();
 router.post(
   "/",
   validateRequest(createPricingZodSchema),
-  checkAuth("ADMIN", "SUPER_ADMIN"),
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   pricingControllers.createPricing,
 );
 
@@ -24,14 +25,14 @@ router.get("/:id", pricingControllers.getPricingById);
 router.patch(
   "/:id",
   validateRequest(updatePricingZodSchema),
-  checkAuth("ADMIN", "SUPER_ADMIN"),
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   pricingControllers.updatePricing,
 );
 
 // DELETE: /api/v1/pricing/:id - Delete pricing rule by ID (Admin & Super Admin)
 router.delete(
   "/:id",
-  checkAuth("ADMIN", "SUPER_ADMIN"),
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   pricingControllers.deletePricing,
 );
 
