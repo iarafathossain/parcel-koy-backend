@@ -36,3 +36,7 @@ export const collectCash = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+
+export const cashCollectionControllers = {
+  collectCash,
+};

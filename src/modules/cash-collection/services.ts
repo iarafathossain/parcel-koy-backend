@@ -45,6 +45,12 @@ export const collectCash = async (
     },
     select: {
       id: true,
+      managedHubs: {
+        select: {
+          id: true,
+        },
+        take: 1,
+      },
     },
   });
 
@@ -52,18 +58,13 @@ export const collectCash = async (
     throw new AppError(status.NOT_FOUND, "Admin (hub manager) not found");
   }
 
-  // fetch the hub manager for record-keeping
-  const hubManager = await prisma.admin.findUnique({
-    where: {
-      userId: admin.id,
-    },
-    include: {
-      managedHubs: true,
-    },
-  });
+  const managedHubId = admin.managedHubs[0]?.id;
 
-  if (!hubManager) {
-    throw new AppError(status.NOT_FOUND, "Admin (hub manager) not found");
+  if (!managedHubId) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      "No hub is assigned to this admin (hub manager)",
+    );
   }
 
   // atomic transaction
@@ -85,7 +86,7 @@ export const collectCash = async (
         amount: payload.amount,
         riderId,
         adminId: admin.id,
-        hubId: hubManager.managedHubs[0]?.id,
+        hubId: managedHubId,
         createdAt: new Date(),
       },
     });

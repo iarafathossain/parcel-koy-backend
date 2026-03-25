@@ -2,6 +2,7 @@ import { Router } from "express";
 import { adminRoutes } from "../modules/admin/routes";
 import { areaRoutes } from "../modules/area/routes";
 import { authRoutes } from "../modules/auth/routes";
+import { cashCollectionRoutes } from "../modules/cash-collection/routes";
 import { categoryRoutes } from "../modules/category/routes";
 import { hubRoutes } from "../modules/hub/routes";
 import { merchantRoutes } from "../modules/merchant/routes";
@@ -56,5 +57,8 @@ router.use("/notes", noteRoutes);
 
 // using rider routes
 router.use("/riders", riderRoutes);
+
+// using cash collection routes
+router.use("/cash-collections", cashCollectionRoutes);
 
 export const indexRoutes = router;
