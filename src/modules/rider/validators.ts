@@ -1,4 +1,5 @@
 import * as zod from "zod";
+import { Gender } from "../../generated/prisma/enums";
 
 export const updateRiderProfileZodSchema = zod
   .object({
@@ -9,7 +10,7 @@ export const updateRiderProfileZodSchema = zod
       .string()
       .regex(/^[0-9]{10,15}$/, "Contact number must be 10-15 digits")
       .optional(),
-    gender: zod.enum(["MALE", "FEMALE", "OTHER"]).optional(),
+    gender: zod.enum([Gender.MALE, Gender.FEMALE, Gender.OTHER]).optional(),
     presentAddress: zod
       .string()
       .min(1, "Present address cannot be empty")

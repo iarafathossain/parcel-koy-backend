@@ -6,7 +6,8 @@ export const createPricingZodSchema = zod
     destinationZoneId: zod.uuid("Destination zone ID must be a valid UUID"),
     categoryId: zod.uuid("Category ID must be a valid UUID"),
     speedId: zod.uuid("Speed ID must be a valid UUID"),
-    methodId: zod.uuid("Method ID must be a valid UUID"),
+    pickupMethodId: zod.uuid("Pickup method ID must be a valid UUID"),
+    deliveryMethodId: zod.uuid("Delivery method ID must be a valid UUID"),
     minWeight: zod
       .number("Min weight must be a number")
       .positive("Min weight must be greater than 0"),
@@ -16,6 +17,7 @@ export const createPricingZodSchema = zod
     price: zod
       .number("Price must be a number")
       .min(0, "Price must be greater than or equal to 0"),
+    isActive: zod.boolean().optional(),
   })
   .refine((data) => data.minWeight < data.maxWeight, {
     message: "Min weight must be less than max weight",
@@ -37,7 +39,12 @@ export const updatePricingZodSchema = zod
       .optional()
       .nullable(),
     speedId: zod.uuid("Speed ID must be a valid UUID").optional(),
-    methodId: zod.uuid("Method ID must be a valid UUID").optional(),
+    pickupMethodId: zod
+      .uuid("Pickup method ID must be a valid UUID")
+      .optional(),
+    deliveryMethodId: zod
+      .uuid("Delivery method ID must be a valid UUID")
+      .optional(),
     minWeight: zod
       .number("Min weight must be a number")
       .positive("Min weight must be greater than 0")
@@ -50,6 +57,7 @@ export const updatePricingZodSchema = zod
       .number("Price must be a number")
       .min(0, "Price must be greater than or equal to 0")
       .optional(),
+    isActive: zod.boolean().optional(),
   })
   .refine(
     (data) => {

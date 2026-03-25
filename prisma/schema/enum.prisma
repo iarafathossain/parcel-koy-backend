@@ -46,3 +46,8 @@ enum PayoutStatus {
     COMPLETED
     REJECTED
 }
+
+enum MethodType {
+    PICKUP
+    DELIVERY
+}

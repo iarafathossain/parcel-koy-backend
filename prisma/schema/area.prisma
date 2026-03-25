@@ -1,7 +1,9 @@
 model Area {
-    id     String @id @default(uuid(7)) @db.Uuid
-    name   String
-    slug   String @unique
+    id       String  @id @default(uuid(7)) @db.Uuid
+    name     String
+    slug     String  @unique
+    isActive Boolean @default(true)
+
     zoneId String @db.Uuid
     zone   Zone   @relation(fields: [zoneId], references: [id])
 

@@ -18,8 +18,11 @@ model Parcel {
     speedId String @db.Uuid
     speed   Speed  @relation(fields: [speedId], references: [id])
 
-    methodId String @db.Uuid
-    method   Method @relation(fields: [methodId], references: [id])
+    pickupMethodId String @db.Uuid
+    pickupMethod   Method @relation("PickupMethod", fields: [pickupMethodId], references: [id])
+
+    deliveryMethodId String @db.Uuid
+    deliveryMethod   Method @relation("DeliveryMethod", fields: [deliveryMethodId], references: [id])
 
     // Routing & Assignment
     pickupRiderId String? @db.Uuid

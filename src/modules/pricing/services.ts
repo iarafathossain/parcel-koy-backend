@@ -52,19 +52,34 @@ const createPricing = async (payload: CreatePricingRulePayload) => {
   }
 
   // Validate that method exists
-  const method = await prisma.method.findUnique({
-    where: { id: payload.methodId },
+  const pickupMethod = await prisma.method.findUnique({
+    where: { id: payload.pickupMethodId },
   });
 
-  if (!method) {
+  if (!pickupMethod) {
+    throw new AppError(status.NOT_FOUND, "Pickup method not found");
+  }
+
+  const deliveryMethod = await prisma.method.findUnique({
+    where: { id: payload.deliveryMethodId },
+  });
+
+  if (!deliveryMethod) {
     throw new AppError(status.NOT_FOUND, "Delivery method not found");
   }
 
   // ensure price is >= method base fee
-  if (payload.price < Number(method.baseFee)) {
+  if (payload.price < Number(pickupMethod.baseFee)) {
     throw new AppError(
       status.BAD_REQUEST,
-      `Price must be greater than or equal to method[${method.slug}] base fee of ${method.baseFee}`,
+      `Price must be greater than or equal to pickup method[${pickupMethod.slug}] base fee of ${pickupMethod.baseFee}`,
+    );
+  }
+
+  if (payload.price < Number(deliveryMethod.baseFee)) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      `Price must be greater than or equal to delivery method[${deliveryMethod.slug}] base fee of ${deliveryMethod.baseFee}`,
     );
   }
 
@@ -119,7 +134,8 @@ const createPricing = async (payload: CreatePricingRulePayload) => {
       destinationZoneId: payload.destinationZoneId,
       categoryId: payload.categoryId,
       speedId: payload.speedId,
-      methodId: payload.methodId,
+      pickupMethodId: payload.pickupMethodId,
+      deliveryMethodId: payload.deliveryMethodId,
     },
   });
 
@@ -136,17 +152,20 @@ const createPricing = async (payload: CreatePricingRulePayload) => {
       destinationZoneId: payload.destinationZoneId,
       categoryId: payload.categoryId,
       speedId: payload.speedId,
-      methodId: payload.methodId,
+      pickupMethodId: payload.pickupMethodId,
+      deliveryMethodId: payload.deliveryMethodId,
       minWeight: payload.minWeight,
       maxWeight: payload.maxWeight,
       price: payload.price,
+      isActive: payload.isActive ?? true,
     },
     include: {
       originalZone: true,
       destinationZone: true,
       category: true,
       speed: true,
-      method: true,
+      pickupMethod: true,
+      deliveryMethod: true,
     },
   });
 
@@ -176,6 +195,7 @@ const getAllPricing = async (queryParams: IQueryParams) => {
       "maxWeight",
       "price",
       "methodId",
+      "isActive",
     ],
   })
     .search()
@@ -188,9 +208,17 @@ const getAllPricing = async (queryParams: IQueryParams) => {
         destinationZone: true,
         category: true,
         speed: true,
-        method: true,
+        pickupMethod: true,
+        deliveryMethod: true,
       },
-      ["originalZone", "destinationZone", "speed", "category", "method"],
+      [
+        "originalZone",
+        "destinationZone",
+        "speed",
+        "category",
+        "pickupMethod",
+        "deliveryMethod",
+      ],
     )
     .paginate();
 
@@ -207,9 +235,17 @@ const getPricingById = async (id: string, queryParams: IQueryParams) => {
         destinationZone: true,
         category: true,
         speed: true,
-        method: true,
+        pickupMethod: true,
+        deliveryMethod: true,
       },
-      ["originalZone", "destinationZone", "speed", "category", "method"],
+      [
+        "originalZone",
+        "destinationZone",
+        "speed",
+        "category",
+        "pickupMethod",
+        "deliveryMethod",
+      ],
     );
 
   const pricing = await prisma.pricing.findMany(
@@ -322,18 +358,36 @@ const updatePricing = async (id: string, payload: UpdatePricingRulePayload) => {
     updateData.categoryId = payload.categoryId;
   }
 
-  if (payload.methodId !== undefined) {
-    if (payload.methodId) {
-      const method = await prisma.method.findUnique({
-        where: { id: payload.methodId },
+  if (payload.pickupMethodId !== undefined) {
+    if (payload.pickupMethodId) {
+      const pickupMethod = await prisma.method.findUnique({
+        where: { id: payload.pickupMethodId },
       });
 
-      if (!method) {
-        throw new AppError(status.NOT_FOUND, "Method not found");
+      if (!pickupMethod) {
+        throw new AppError(status.NOT_FOUND, "Pickup method not found");
       }
     }
 
-    updateData.methodId = payload.methodId;
+    updateData.pickupMethodId = payload.pickupMethodId;
+  }
+
+  if (payload.deliveryMethodId !== undefined) {
+    if (payload.deliveryMethodId) {
+      const deliveryMethod = await prisma.method.findUnique({
+        where: { id: payload.deliveryMethodId },
+      });
+
+      if (!deliveryMethod) {
+        throw new AppError(status.NOT_FOUND, "Delivery method not found");
+      }
+    }
+
+    updateData.deliveryMethodId = payload.deliveryMethodId;
+  }
+
+  if (payload.isActive !== undefined) {
+    updateData.isActive = payload.isActive;
   }
 
   const pricingRule = await prisma.pricing.update({
@@ -344,7 +398,8 @@ const updatePricing = async (id: string, payload: UpdatePricingRulePayload) => {
       destinationZone: true,
       category: true,
       speed: true,
-      method: true,
+      pickupMethod: true,
+      deliveryMethod: true,
     },
   });
 

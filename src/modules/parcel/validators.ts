@@ -1,11 +1,13 @@
 import * as zod from "zod";
+import { ParcelStatus } from "../../generated/prisma/enums";
 
 export const createParcelZodSchema = zod.object({
   categoryId: zod.string().uuid("Invalid Category ID"),
   destinationAreaId: zod.string().uuid("Invalid Area ID"),
   originAreaId: zod.string().uuid("Invalid Area ID").optional(),
   speedId: zod.string().uuid("Invalid Speed ID"),
-  methodId: zod.string().uuid("Invalid Method ID"),
+  pickupMethodId: zod.string().uuid("Invalid Pickup Method ID"),
+  deliveryMethodId: zod.string().uuid("Invalid Delivery Method ID"),
   pickupRiderId: zod.string().uuid("Invalid Pickup Rider ID").optional(),
   deliveryRiderId: zod.string().uuid("Invalid Delivery Rider ID").optional(),
   originHubId: zod.string().uuid("Invalid Origin Hub ID").optional(),
@@ -28,7 +30,8 @@ export const updateParcelZodSchema = zod.object({
   destinationAreaId: zod.string().uuid("Invalid Area ID").optional(),
   originAreaId: zod.string().uuid("Invalid Area ID").optional(),
   speedId: zod.string().uuid("Invalid Speed ID").optional(),
-  methodId: zod.string().uuid("Invalid Method ID").optional(),
+  pickupMethodId: zod.string().uuid("Invalid Pickup Method ID").optional(),
+  deliveryMethodId: zod.string().uuid("Invalid Delivery Method ID").optional(),
   declaredWeight: zod
     .number()
     .positive("Declared weight must be a positive number")
@@ -53,20 +56,20 @@ export const updateParcelZodSchema = zod.object({
 export const updateParcelStatusByAdminZodSchema = zod.object({
   status: zod.enum(
     [
-      "REQUESTED",
-      "PICKUP_RIDER_ASSIGNED",
-      "PICKED_UP",
-      "PICKUP_FAILED",
-      "RECEIVED_AT_ORIGIN_HUB",
-      "IN_TRANSIT",
-      "RECEIVED_AT_DESTINATION_HUB",
-      "OUT_FOR_DELIVERY",
-      "DELIVERED",
-      "PARTIAL_DELIVERY",
-      "DELIVERY_FAILED",
-      "ON_HOLD",
-      "RETURNED_TO_MERCHANT",
-      "CANCELLED",
+      ParcelStatus.PICKED_UP,
+      ParcelStatus.IN_TRANSIT,
+      ParcelStatus.OUT_FOR_DELIVERY,
+      ParcelStatus.DELIVERED,
+      ParcelStatus.PICKUP_FAILED,
+      ParcelStatus.DELIVERY_FAILED,
+      ParcelStatus.CANCELLED,
+      ParcelStatus.ON_HOLD,
+      ParcelStatus.PARTIAL_DELIVERY,
+      ParcelStatus.PICKUP_RIDER_ASSIGNED,
+      ParcelStatus.RECEIVED_AT_DESTINATION_HUB,
+      ParcelStatus.RECEIVED_AT_ORIGIN_HUB,
+      ParcelStatus.REQUESTED,
+      ParcelStatus.RETURNED_TO_MERCHANT,
     ],
     "Invalid parcel status selected",
   ),
@@ -83,7 +86,11 @@ export const cancelParcelByMerchantZodSchema = zod.object({
 
 export const updateParcelStatusByRiderZodSchema = zod.object({
   status: zod.enum(
-    ["PICKED_UP", "PICKUP_FAILED", "DELIVERY_FAILED"],
+    [
+      ParcelStatus.PICKED_UP,
+      ParcelStatus.PICKUP_FAILED,
+      ParcelStatus.DELIVERY_FAILED,
+    ],
     "Invalid parcel status selected",
   ),
   pickupFailedReason: zod

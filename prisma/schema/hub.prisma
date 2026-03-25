@@ -1,9 +1,10 @@
 model Hub {
-    id            String @id @default(uuid(7)) @db.Uuid
-    name          String @unique
-    slug          String @unique
+    id            String  @id @default(uuid(7)) @db.Uuid
+    name          String  @unique
+    slug          String  @unique
     address       String
     contactNumber String
+    isActive      Boolean @default(true)
 
     managerId String? @db.Uuid
     manager   Admin?  @relation("HubManager", fields: [managerId], references: [id])

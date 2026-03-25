@@ -35,21 +35,36 @@ const createParcel = async (payload: CreateParcelPayload, userId: string) => {
 
   const trackingID = generateTrackingID();
 
-  const method = await prisma.method.findUnique({
-    where: { id: payload.methodId },
-    select: { baseFee: true, slug: true },
+  // validate the pickup method
+  const pickupMethod = await prisma.method.findUnique({
+    where: { id: payload.pickupMethodId },
+    select: { baseFee: true, slug: true, id: true },
   });
 
-  if (!method) {
+  if (!pickupMethod) {
+    throw new AppError(status.BAD_REQUEST, "Invalid pickup method selected");
+  }
+
+  // validate the delivery method
+  const deliveryMethod = await prisma.method.findUnique({
+    where: { id: payload.deliveryMethodId },
+    select: { baseFee: true, slug: true, id: true },
+  });
+
+  if (!deliveryMethod) {
     throw new AppError(status.BAD_REQUEST, "Invalid delivery method selected");
   }
 
   // if method is "pick & drop", originAreaId is required, otherwise use merchant's origin area
   const originAreaId =
-    method.slug === "pick-drop" ? payload.originAreaId : merchantOriginAreaId;
+    pickupMethod.slug === "pick-drop"
+      ? payload.originAreaId
+      : merchantOriginAreaId;
 
   const pickupAddress =
-    method.slug === "pick-drop" ? payload.pickupAddress : merchantPickupAddress;
+    pickupMethod.slug === "pick-drop"
+      ? payload.pickupAddress
+      : merchantPickupAddress;
 
   if (!originAreaId) {
     throw new AppError(status.BAD_REQUEST, "Origin area is required");
@@ -101,7 +116,8 @@ const createParcel = async (payload: CreateParcelPayload, userId: string) => {
       originalZoneId: originArea?.zoneId,
       destinationZoneId: destinationArea?.zoneId,
       speedId: payload.speedId,
-      methodId: payload.methodId,
+      pickupMethodId: pickupMethod.id,
+      deliveryMethodId: deliveryMethod.id,
       categoryId: payload.categoryId,
       minWeight: { lte: payload.declaredWeight },
       maxWeight: { gte: payload.declaredWeight },
@@ -140,7 +156,8 @@ const createParcel = async (payload: CreateParcelPayload, userId: string) => {
         originHubId: originArea.hubID,
         destinationHubId: destinationArea.hubID,
         speedId: payload.speedId,
-        methodId: payload.methodId,
+        pickupMethodId: pickupMethod.id,
+        deliveryMethodId: deliveryMethod.id,
         declaredWeight: payload.declaredWeight,
         isFragile: payload.isFragile,
         pickupAddress: pickupAddress,
@@ -211,9 +228,9 @@ const updateParcel = async (
   }
 
   // if method is being updated to "pick & drop", originAreaId and pickupAddress are required
-  if (payload.methodId) {
+  if (payload.pickupMethodId) {
     const method = await prisma.method.findUnique({
-      where: { id: payload.methodId },
+      where: { id: payload.pickupMethodId },
       select: { slug: true },
     });
 
@@ -268,7 +285,8 @@ const updateParcel = async (
     payload.originAreaId ||
     payload.destinationAreaId ||
     payload.speedId ||
-    payload.methodId ||
+    payload.pickupMethodId ||
+    payload.deliveryMethodId ||
     payload.categoryId ||
     payload.declaredWeight
   ) {
@@ -286,7 +304,8 @@ const updateParcel = async (
         originalZoneId: originArea?.zoneId,
         destinationZoneId: destinationArea?.zoneId,
         speedId: payload.speedId || parcel.speedId,
-        methodId: payload.methodId || parcel.methodId,
+        pickupMethodId: payload.pickupMethodId || parcel.pickupMethodId,
+        deliveryMethodId: payload.deliveryMethodId || parcel.deliveryMethodId,
         categoryId: payload.categoryId || parcel.categoryId,
         minWeight: { lte: payload.declaredWeight || parcel.declaredWeight },
         maxWeight: { gte: payload.declaredWeight || parcel.declaredWeight },

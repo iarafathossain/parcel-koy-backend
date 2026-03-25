@@ -26,6 +26,7 @@ const createArea = async (payload: CreateAreaPayload) => {
   const area = await prisma.area.create({
     data: {
       name: payload.name,
+      isActive: payload.isActive ?? true,
       slug,
       zoneId: payload.zoneId,
       hubID: payload.hubId,
@@ -105,6 +106,10 @@ const updateArea = async (slug: string, payload: UpdateAreaPayload) => {
 
   if (payload.hubId) {
     updateData.hubID = payload.hubId;
+  }
+
+  if (payload.isActive !== undefined) {
+    updateData.isActive = payload.isActive;
   }
 
   const area = await prisma.area.update({

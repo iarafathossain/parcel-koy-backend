@@ -77,7 +77,29 @@ const registerMerchant = async (payload: RegisterMerchantZodSchema) => {
     throw new AppError(status.BAD_REQUEST, "Email already exists");
   }
 
-  // step 2: create new user with better-auth
+  // step 2: check if contact number already exists
+  const existingContactNumber = await prisma.user.findFirst({
+    where: {
+      contactNumber: payload.contactNumber,
+    },
+  });
+
+  if (existingContactNumber) {
+    throw new AppError(status.BAD_REQUEST, "Contact number already exists");
+  }
+
+  // step 3: check origin area exists
+  const existingOriginArea = await prisma.area.findUnique({
+    where: {
+      id: originAreaId,
+    },
+  });
+
+  if (!existingOriginArea) {
+    throw new AppError(status.BAD_REQUEST, "Origin area does not exist");
+  }
+
+  // step 4: create new user with better-auth
   const { user, token: sessionToken } = await auth.api.signUpEmail({
     body: {
       name,
@@ -92,7 +114,7 @@ const registerMerchant = async (payload: RegisterMerchantZodSchema) => {
   }
 
   try {
-    // step 3: create merchant profile in the database
+    // step 5: create merchant profile in the database
     const merchant = await prisma.merchant.create({
       data: {
         userId: user.id,

@@ -29,6 +29,7 @@ const createCategory = async (payload: CreateCategoryPayload) => {
       slug,
       baseWeight: payload.baseWeight,
       baseFee: payload.baseFee ?? undefined,
+      isActive: payload.isActive ?? true,
     },
   });
 
@@ -44,7 +45,7 @@ const getAllCategories = async (queryParams: IQueryParams) => {
 
   const queryBuilder = new QueryBuilder(prisma.category, listQueryParams, {
     searchableFields: ["name", "slug"],
-    filterableFields: ["name", "slug", "baseWeight"],
+    filterableFields: ["name", "slug", "baseWeight", "isActive"],
   })
     .search()
     .filter()
@@ -95,6 +96,10 @@ const updateCategory = async (slug: string, payload: UpdateCategoryPayload) => {
 
   if (payload.baseFee !== undefined) {
     updateData.baseFee = payload.baseFee;
+  }
+
+  if (payload.isActive !== undefined) {
+    updateData.isActive = payload.isActive;
   }
 
   const category = await prisma.category.update({

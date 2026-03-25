@@ -23,6 +23,19 @@ const createHub = async (payload: CreateHubPayload) => {
     );
   }
 
+  // validate if manager exists before creating hub
+  if (payload.managerId) {
+    const manager = await prisma.admin.findUnique({
+      where: {
+        id: payload.managerId,
+      },
+    });
+
+    if (!manager) {
+      throw new AppError(status.BAD_REQUEST, "Manager not found");
+    }
+  }
+
   const hub = await prisma.hub.create({
     data: {
       name: payload.name,
@@ -30,6 +43,7 @@ const createHub = async (payload: CreateHubPayload) => {
       address: payload.address,
       contactNumber: payload.contactNumber,
       managerId: payload.managerId ?? undefined,
+      isActive: payload.isActive ?? true,
     },
     include: {
       manager: true,
@@ -41,8 +55,8 @@ const createHub = async (payload: CreateHubPayload) => {
 
 const getAllHubs = async (queryParams: IQueryParams) => {
   const queryBuilder = new QueryBuilder(prisma.hub, queryParams, {
-    searchableFields: ["name", "slug", "address", "contactNumber", "area.name"],
-    filterableFields: ["name", "slug", "areaId", "area.slug"],
+    searchableFields: ["name", "slug", "address", "contactNumber"],
+    filterableFields: ["name", "slug", "managerId", "isActive"],
   })
     .search()
     .filter()
@@ -50,10 +64,10 @@ const getAllHubs = async (queryParams: IQueryParams) => {
     .fields()
     .dynamicInclude(
       {
-        area: true,
+        coverageAreas: true,
         manager: true,
       },
-      ["area", "manager"],
+      ["coverageAreas", "manager"],
     )
     .paginate();
 
@@ -66,10 +80,10 @@ const getHubBySlug = async (slug: string, queryParams: IQueryParams) => {
     .fields()
     .dynamicInclude(
       {
-        area: true,
+        coverageAreas: true,
         manager: true,
       },
-      ["area", "manager"],
+      ["coverageAreas", "manager"],
     );
 
   const hubs = await prisma.hub.findMany(
@@ -97,6 +111,10 @@ const updateHub = async (slug: string, payload: UpdateHubPayload) => {
 
   if (payload.managerId !== undefined) {
     updateData.managerId = payload.managerId;
+  }
+
+  if (payload.isActive !== undefined) {
+    updateData.isActive = payload.isActive;
   }
 
   const hub = await prisma.hub.update({

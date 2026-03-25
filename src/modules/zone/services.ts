@@ -25,6 +25,8 @@ const createZone = async (payload: CreateZonePayload) => {
     data: {
       name: payload.name,
       slug,
+      isActive: payload.isActive ?? true,
+      isInsideDhaka: payload.isInsideDhaka,
     },
   });
 
@@ -57,6 +59,14 @@ const updateZone = async (slug: string, payload: UpdateZonePayload) => {
   if (payload.name) {
     updateData.name = payload.name;
     updateData.slug = getSlug(payload.name);
+  }
+
+  if (payload.isActive !== undefined) {
+    updateData.isActive = payload.isActive;
+  }
+
+  if (payload.isInsideDhaka !== undefined) {
+    updateData.isInsideDhaka = payload.isInsideDhaka;
   }
 
   const zone = await prisma.zone.update({

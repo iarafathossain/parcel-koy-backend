@@ -27,8 +27,10 @@ const createMethod = async (payload: CreateMethodPayload) => {
     data: {
       name: payload.name,
       slug,
+      type: payload.type,
       description: payload.description,
       baseFee: payload.baseFee,
+      isActive: payload.isActive ?? true,
     },
   });
 
@@ -44,7 +46,7 @@ const getAllMethods = async (queryParams: IQueryParams) => {
 
   const queryBuilder = new QueryBuilder(prisma.method, listQueryParams, {
     searchableFields: ["name", "slug", "description"],
-    filterableFields: ["name", "slug", "baseFee"],
+    filterableFields: ["name", "slug", "baseFee", "type", "isActive"],
   })
     .search()
     .filter()
@@ -53,7 +55,8 @@ const getAllMethods = async (queryParams: IQueryParams) => {
     .dynamicInclude(
       {
         pricing: true,
-        parcels: true,
+        pickupParcels: true,
+        deliveryParcels: true,
       },
       [],
     )
@@ -69,7 +72,8 @@ const getMethodBySlug = async (slug: string, queryParams: IQueryParams) => {
     .dynamicInclude(
       {
         pricing: true,
-        parcels: true,
+        pickupParcels: true,
+        deliveryParcels: true,
       },
       [],
     );
@@ -95,6 +99,13 @@ const updateMethod = async (slug: string, payload: UpdateMethodPayload) => {
 
   if (payload.baseFee !== undefined) {
     updateData.baseFee = payload.baseFee;
+  }
+
+  if (payload.type) {
+    updateData.type = payload.type;
+  }
+  if (payload.isActive !== undefined) {
+    updateData.isActive = payload.isActive;
   }
 
   const method = await prisma.method.update({

@@ -4,6 +4,7 @@ model Category {
     slug       String  @unique
     baseWeight Float
     baseFee    Decimal @default(0.00) @db.Decimal(10, 2)
+    isActive   Boolean @default(true)
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt

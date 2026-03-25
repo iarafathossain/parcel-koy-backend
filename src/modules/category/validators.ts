@@ -12,6 +12,7 @@ export const createCategoryZodSchema = zod.object({
     .number("Base fee must be a number")
     .nonnegative("Base fee must be greater than or equal to 0")
     .optional(),
+  isActive: zod.boolean().optional(),
 });
 
 export type CreateCategoryPayload = zod.infer<typeof createCategoryZodSchema>;
@@ -29,6 +30,7 @@ export const updateCategoryZodSchema = zod.object({
     .number("Base fee must be a number")
     .nonnegative("Base fee must be greater than or equal to 0")
     .optional(),
+  isActive: zod.boolean().optional(),
 });
 
 export type UpdateCategoryPayload = zod.infer<typeof updateCategoryZodSchema>;

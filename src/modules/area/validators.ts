@@ -6,6 +6,7 @@ export const createAreaZodSchema = zod.object({
     .min(1, "Area name is required")
     .min(3, "Area name must be at least 3 characters long"),
   zoneId: zod.uuid("Zone ID must be a valid UUID"),
+  isActive: zod.boolean().optional(),
   hubId: zod.uuid("Hub ID must be a valid UUID").optional(),
 });
 
@@ -17,6 +18,7 @@ export const updateAreaZodSchema = zod.object({
     .min(3, "Area name must be at least 3 characters long")
     .optional(),
   zoneId: zod.uuid("Zone ID must be a valid UUID").optional(),
+  isActive: zod.boolean().optional(),
   hubId: zod.uuid("Hub ID must be a valid UUID").optional(),
 });
 

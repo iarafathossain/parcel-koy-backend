@@ -1,16 +1,21 @@
 model Method {
-    id          String  @id @default(uuid(7)) @db.Uuid
+    id          String     @id @default(uuid(7)) @db.Uuid
     name        String
-    slug        String  @unique
+    slug        String     @unique
+    type        MethodType
     description String?
+    isActive    Boolean    @default(true)
 
     baseFee Decimal @default(0.00) @db.Decimal(10, 2)
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    pricing Pricing[]
-    parcels Parcel[]
+    pickupPricings   Pricing[] @relation("PricingPickupMethod")
+    deliveryPricings Pricing[] @relation("PricingDeliveryMethod")
+
+    pickupParcels   Parcel[] @relation("PickupMethod")
+    deliveryParcels Parcel[] @relation("DeliveryMethod")
 
     @@map("methods")
 }
