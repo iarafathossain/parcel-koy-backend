@@ -1,11 +1,13 @@
 import status from "http-status";
 import AppError from "../../errors/app-error";
+import { PayoutStatus } from "../../generated/prisma/enums";
 import { IRequestUser } from "../../interfaces/auth-type";
 import { IQueryParams } from "../../interfaces/query-type";
 import { prisma } from "../../libs/prisma";
 import { QueryBuilder } from "../../utils/query-builder";
 import {
   GetSingleMerchantByEmailPayload,
+  MakePaymentRequestPayload,
   UpdateMerchantProfilePayload,
 } from "./validators";
 
@@ -364,6 +366,51 @@ const getAllParcelByMerchantId = async (
   return await queryBuilder.execute();
 };
 
+const makePaymentRequest = async (
+  payload: MakePaymentRequestPayload,
+  userId: string,
+) => {
+  // 1. Fetch the merchant's current balance
+  const merchant = await prisma.merchant.findUnique({
+    where: { userId: userId },
+    select: { id: true, balance: true },
+  });
+
+  if (!merchant) {
+    throw new AppError(status.NOT_FOUND, "Merchant profile not found");
+  }
+
+  const currentBalance = Number(merchant.balance);
+
+  // 2. Simply check if they have enough in their wallet
+  if (payload.amount > currentBalance) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      `Insufficient balance. Your withdrawable balance is ${currentBalance} BDT, but you requested ${payload.amount} BDT.`,
+    );
+  }
+
+  // 3. Create payout and deduct balance instantly
+  return await prisma.$transaction(async (tx) => {
+    const payout = await tx.payout.create({
+      data: {
+        merchantId: merchant.id,
+        amount: payload.amount,
+        status: PayoutStatus.PENDING,
+      },
+    });
+
+    await tx.merchant.update({
+      where: { id: merchant.id },
+      data: {
+        balance: { decrement: payload.amount },
+      },
+    });
+
+    return payout;
+  });
+};
+
 const deleteMerchantById = async (merchantId: string) => {
   const existingMerchant = await prisma.merchant.findUnique({
     where: {
@@ -399,5 +446,6 @@ export const merchantServices = {
   getSingleMerchantById,
   getSingleMerchantByEmail,
   getAllParcelByMerchantId,
+  makePaymentRequest,
   deleteMerchantById,
 };

@@ -5,6 +5,7 @@ import { validateRequest } from "../../middlewares/validate-request";
 import { merchantControllers } from "./controllers";
 import {
   getSingleMerchantByEmailZodSchema,
+  makePaymentRequestZodSchema,
   updateMerchantProfileZodSchema,
 } from "./validators";
 
@@ -45,6 +46,14 @@ router.get(
   "/:id/parcels",
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN, Role.RIDER, Role.MERCHANT),
   merchantControllers.getAllParcelByMerchantId,
+);
+
+// POST: /api/v1/merchants/payment-requests - Create payout/payment request (Merchant only)
+router.post(
+  "/payment-requests",
+  validateRequest(makePaymentRequestZodSchema),
+  checkAuth(Role.MERCHANT),
+  merchantControllers.makePaymentRequest,
 );
 
 // DELETE: /api/v1/merchants/:id/permanent - Permanent delete merchant (Admin, Super Admin)

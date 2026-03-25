@@ -138,6 +138,29 @@ const getAllParcelByMerchantId = catchAsync(
   },
 );
 
+const makePaymentRequest = catchAsync(async (req: Request, res: Response) => {
+  const user = req.user;
+
+  if (!user) {
+    throw new AppError(
+      status.UNAUTHORIZED,
+      "Unauthorized Access! User not found in request",
+    );
+  }
+
+  const result = await merchantServices.makePaymentRequest(
+    req.body,
+    user.userId,
+  );
+
+  sendResponse(res, {
+    httpStatusCode: status.CREATED,
+    success: true,
+    message: "Payment request created successfully",
+    data: result,
+  });
+});
+
 const deleteMerchantById = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
 
@@ -165,5 +188,6 @@ export const merchantControllers = {
   getSingleMerchantById,
   getSingleMerchantByEmail,
   getAllParcelByMerchantId,
+  makePaymentRequest,
   deleteMerchantById,
 };

@@ -40,9 +40,20 @@ export const getSingleMerchantByEmailZodSchema = zod.object({
   email: zod.email("Invalid email address"),
 });
 
+export const makePaymentRequestZodSchema = zod.object({
+  amount: zod
+    .number({
+      error: "Amount must be a valid number",
+    })
+    .positive("Amount must be greater than 0"),
+});
+
 export type UpdateMerchantProfilePayload = zod.infer<
   typeof updateMerchantProfileZodSchema
 >;
 export type GetSingleMerchantByEmailPayload = zod.infer<
   typeof getSingleMerchantByEmailZodSchema
+>;
+export type MakePaymentRequestPayload = zod.infer<
+  typeof makePaymentRequestZodSchema
 >;
