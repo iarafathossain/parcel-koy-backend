@@ -13,6 +13,39 @@ import {
   UpdateParcelStatusByRiderPayload,
 } from "./validators";
 
+const resolveHubIdForStatus = (
+  statusValue: ParcelStatus,
+  parcel: { originHubId: string | null; destinationHubId: string | null },
+): string | undefined => {
+  const originSideStatuses: ParcelStatus[] = [
+    ParcelStatus.REQUESTED,
+    ParcelStatus.PICKUP_RIDER_ASSIGNED,
+    ParcelStatus.PICKED_UP,
+    ParcelStatus.PICKUP_FAILED,
+    ParcelStatus.CANCELLED,
+    ParcelStatus.RECEIVED_AT_ORIGIN_HUB,
+  ];
+
+  const destinationSideStatuses: ParcelStatus[] = [
+    ParcelStatus.RECEIVED_AT_DESTINATION_HUB,
+    ParcelStatus.OUT_FOR_DELIVERY,
+    ParcelStatus.DELIVERY_FAILED,
+    ParcelStatus.PARTIAL_DELIVERY,
+    ParcelStatus.DELIVERED,
+    ParcelStatus.RETURNED_TO_MERCHANT,
+  ];
+
+  if (originSideStatuses.includes(statusValue)) {
+    return parcel.originHubId ?? undefined;
+  }
+
+  if (destinationSideStatuses.includes(statusValue)) {
+    return parcel.destinationHubId ?? undefined;
+  }
+
+  return undefined;
+};
+
 const createParcel = async (payload: CreateParcelPayload, userId: string) => {
   const merchant = await prisma.merchant.findUnique({
     where: { userId: userId },
@@ -184,6 +217,7 @@ const createParcel = async (payload: CreateParcelPayload, userId: string) => {
         parcelId: createdParcel.id,
         userId: merchant.userId,
         status: "REQUESTED",
+        hubId: createdParcel.originHubId ?? undefined,
         description: "Parcel created and awaiting pickup rider assignment",
       },
     });
@@ -470,6 +504,10 @@ const updateParcelStatusByAdmin = async (
         parcelId: parcelId,
         userId: userId,
         status: payload.status,
+        hubId: resolveHubIdForStatus(payload.status, {
+          originHubId: parcel.originHubId,
+          destinationHubId: parcel.destinationHubId,
+        }),
         description: `Parcel status updated to ${payload.status} by admin`,
       },
     });
@@ -491,6 +529,8 @@ const cancelParcelByMerchant = async (
       id: true,
       status: true,
       merchantId: true,
+      originHubId: true,
+      destinationHubId: true,
       merchant: {
         select: {
           userId: true,
@@ -541,6 +581,7 @@ const cancelParcelByMerchant = async (
         parcelId: parcelId,
         userId: userId,
         status: "CANCELLED",
+        hubId: parcel.originHubId ?? undefined,
         description: `Parcel cancelled by merchant. Reason: ${payload.cancellationReason || "No reason provided"}`,
       },
     });
@@ -564,6 +605,8 @@ const updateParcelStatusByRider = async (
       status: true,
       pickupRiderId: true,
       deliveryRiderId: true,
+      originHubId: true,
+      destinationHubId: true,
     },
   });
 
@@ -672,6 +715,10 @@ const updateParcelStatusByRider = async (
         parcelId: parcelId,
         userId: userId,
         status: payload.status,
+        hubId: resolveHubIdForStatus(payload.status, {
+          originHubId: parcel.originHubId,
+          destinationHubId: parcel.destinationHubId,
+        }),
         description: `Parcel status updated to ${payload.status} by rider. ${
           payload.pickupFailedReason || payload.deliveryFailedReason
         }`,
@@ -819,10 +866,79 @@ const verifyAndDeliverParcel = async (parcelId: string, otp: string) => {
         parcelId: existingParcel.id,
         userId: rider.userId,
         status: "DELIVERED",
+        hubId: existingParcel.destinationHubId ?? undefined,
         description: `Parcel delivered successfully. COD amount ${existingParcel.codAmount} BDT added to merchant balance and rider's cash in hand.`,
       },
     }),
   ]);
+};
+
+const getParcelHubTracking = async (trackingId: string) => {
+  const parcel = await prisma.parcel.findUnique({
+    where: { trackingId },
+    select: {
+      id: true,
+      trackingId: true,
+      status: true,
+      originHub: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          address: true,
+          contactNumber: true,
+        },
+      },
+      destinationHub: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          address: true,
+          contactNumber: true,
+        },
+      },
+      trackingLogs: {
+        orderBy: { createdAt: "asc" },
+        select: {
+          id: true,
+          status: true,
+          description: true,
+          createdAt: true,
+          userId: true,
+          hubId: true,
+          hub: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              address: true,
+              contactNumber: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!parcel) {
+    throw new AppError(status.NOT_FOUND, "Parcel not found");
+  }
+
+  const latestHubLog = [...parcel.trackingLogs]
+    .reverse()
+    .find((log) => !!log.hubId);
+
+  return {
+    parcelId: parcel.id,
+    trackingId: parcel.trackingId,
+    status: parcel.status,
+    currentHub: latestHubLog?.hub ?? null,
+    currentHubUpdatedAt: latestHubLog?.createdAt ?? null,
+    originHub: parcel.originHub,
+    destinationHub: parcel.destinationHub,
+    trackingTimeline: parcel.trackingLogs,
+  };
 };
 
 export const parcelServices = {
@@ -833,4 +949,5 @@ export const parcelServices = {
   updateParcelStatusByRider,
   sendDeliveryOTP,
   verifyAndDeliverParcel,
+  getParcelHubTracking,
 };

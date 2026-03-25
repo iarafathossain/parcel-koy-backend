@@ -206,6 +206,23 @@ const verifyAndDeliverParcel = catchAsync(
   },
 );
 
+const getParcelHubTracking = catchAsync(async (req: Request, res: Response) => {
+  const { trackingId } = req.params;
+
+  if (!trackingId || typeof trackingId !== "string") {
+    throw new AppError(status.BAD_REQUEST, "Tracking ID is required");
+  }
+
+  const result = await parcelServices.getParcelHubTracking(trackingId);
+
+  sendResponse(res, {
+    httpStatusCode: status.OK,
+    success: true,
+    message: "Parcel hub tracking retrieved successfully",
+    data: result,
+  });
+});
+
 export const parcelControllers = {
   createParcel,
   updateParcel,
@@ -214,4 +231,5 @@ export const parcelControllers = {
   updateParcelStatusByRider,
   sendDeliveryOTP,
   verifyAndDeliverParcel,
+  getParcelHubTracking,
 };

@@ -68,4 +68,7 @@ router.patch(
   parcelControllers.verifyAndDeliverParcel,
 );
 
+// GET: /api/v1/parcels/tracking/:trackingId - Get parcel hub tracking details (public route)
+router.get("/tracking/:trackingId", parcelControllers.getParcelHubTracking);
+
 export const parcelRoutes = router;
