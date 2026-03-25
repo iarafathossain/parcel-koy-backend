@@ -77,6 +77,32 @@ const updateHub = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getHubCashCollections = catchAsync(
+  async (req: Request, res: Response) => {
+    const { hubId } = req.params;
+
+    if (!hubId) {
+      throw new AppError(status.BAD_REQUEST, "Hub ID is required");
+    }
+
+    if (typeof hubId !== "string") {
+      throw new AppError(status.BAD_REQUEST, "Hub ID must be a string");
+    }
+
+    const date =
+      typeof req.query.date === "string" ? req.query.date : undefined;
+
+    const result = await hubService.getHubCashCollections(hubId, date);
+
+    sendResponse(res, {
+      httpStatusCode: status.OK,
+      success: true,
+      message: "Hub cash collections retrieved successfully",
+      data: result,
+    });
+  },
+);
+
 const deleteHub = catchAsync(async (req: Request, res: Response) => {
   const { slug } = req.params;
 
@@ -104,4 +130,5 @@ export const hubControllers = {
   getHubBySlug,
   updateHub,
   deleteHub,
+  getHubCashCollections,
 };

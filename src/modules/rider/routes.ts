@@ -55,6 +55,13 @@ router.get(
   riderControllers.getAllParcelByRider,
 );
 
+// GET: /api/v1/riders/my-cash-handovers - Get rider cash handover history (Rider, Admin, Super Admin)
+router.get(
+  "/my-cash-handovers",
+  checkAuth("RIDER", "ADMIN", "SUPER_ADMIN"),
+  riderControllers.getRiderCashHistory,
+);
+
 // GET: /api/v1/riders/:id - Get single rider by id (Public)
 router.get("/:id", riderControllers.getSingleRiderById);
 

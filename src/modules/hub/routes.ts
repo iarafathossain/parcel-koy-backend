@@ -28,6 +28,13 @@ router.patch(
   hubControllers.updateHub,
 );
 
+// GET: /api/v1/hubs/:hubId/cash-collections?date=today - Get cash collections for a hub (Admin, Super Admin)
+router.get(
+  "/:hubId/cash-collections",
+  checkAuth("ADMIN", "SUPER_ADMIN"),
+  hubControllers.getHubCashCollections,
+);
+
 // DELETE: /api/v1/hubs/:slug - Delete hub by slug (Admin & Super Admin)
 router.delete(
   "/:slug",

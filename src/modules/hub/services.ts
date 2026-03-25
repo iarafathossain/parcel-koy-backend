@@ -6,6 +6,29 @@ import { getSlug } from "../../utils/get-slug";
 import { QueryBuilder } from "../../utils/query-builder";
 import { CreateHubPayload, UpdateHubPayload } from "./validators";
 
+const getDateRangeByKey = (dateKey?: string) => {
+  const now = new Date();
+
+  if (!dateKey || dateKey.toLowerCase() === "today") {
+    const start = new Date(now);
+    start.setHours(0, 0, 0, 0);
+
+    const end = new Date(now);
+    end.setHours(23, 59, 59, 999);
+
+    return {
+      key: "today",
+      start,
+      end,
+    };
+  }
+
+  throw new AppError(
+    status.BAD_REQUEST,
+    "Invalid date filter. Supported value: today",
+  );
+};
+
 const createHub = async (payload: CreateHubPayload) => {
   const slug = getSlug(payload.name);
 
@@ -130,6 +153,88 @@ const updateHub = async (slug: string, payload: UpdateHubPayload) => {
   return hub;
 };
 
+const getHubCashCollections = async (hubId: string, dateKey?: string) => {
+  const hub = await prisma.hub.findUnique({
+    where: {
+      id: hubId,
+    },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+    },
+  });
+
+  if (!hub) {
+    throw new AppError(status.NOT_FOUND, "Hub not found");
+  }
+
+  const dateRange = getDateRangeByKey(dateKey);
+
+  const whereCondition = {
+    hubId,
+    createdAt: {
+      gte: dateRange.start,
+      lte: dateRange.end,
+    },
+  };
+
+  const [cashCollections, aggregate] = await Promise.all([
+    prisma.cashCollection.findMany({
+      where: whereCondition,
+      orderBy: {
+        createdAt: "desc",
+      },
+      include: {
+        rider: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                contactNumber: true,
+              },
+            },
+          },
+        },
+        admin: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
+    }),
+    prisma.cashCollection.aggregate({
+      where: whereCondition,
+      _sum: {
+        amount: true,
+      },
+      _count: {
+        id: true,
+      },
+    }),
+  ]);
+
+  return {
+    hub,
+    date: dateRange.key,
+    dateRange: {
+      start: dateRange.start,
+      end: dateRange.end,
+    },
+    totalAmount: Number(aggregate._sum.amount ?? 0),
+    totalCollections: aggregate._count.id,
+    cashCollections,
+  };
+};
+
 const deleteHub = async (slug: string) => {
   // validate if hub exists before attempting to delete
   const existingHub = await prisma.hub.findUnique({
@@ -157,4 +262,5 @@ export const hubService = {
   getHubBySlug,
   updateHub,
   deleteHub,
+  getHubCashCollections,
 };

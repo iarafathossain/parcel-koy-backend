@@ -460,6 +460,85 @@ const deleteRiderById = async (riderId: string) => {
   });
 };
 
+const getRiderCashHistory = async (
+  currentUser: IRequestUser,
+  riderIdFromQuery?: string,
+) => {
+  let targetRiderId: string | undefined;
+
+  if (currentUser.role === "RIDER") {
+    const rider = await prisma.rider.findUnique({
+      where: {
+        userId: currentUser.userId,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!rider) {
+      throw new AppError(status.NOT_FOUND, "Rider profile not found");
+    }
+
+    targetRiderId = rider.id;
+  }
+
+  if (currentUser.role === "ADMIN" || currentUser.role === "SUPER_ADMIN") {
+    if (!riderIdFromQuery) {
+      throw new AppError(
+        status.BAD_REQUEST,
+        "riderId query is required for admin and super admin",
+      );
+    }
+
+    targetRiderId = riderIdFromQuery;
+  }
+
+  if (!targetRiderId) {
+    throw new AppError(status.BAD_REQUEST, "Unable to resolve rider id");
+  }
+
+  const cashHandovers = await prisma.cashCollection.findMany({
+    where: {
+      riderId: targetRiderId,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    include: {
+      admin: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              role: true,
+            },
+          },
+        },
+      },
+      hub: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+        },
+      },
+    },
+  });
+
+  const totalAmount = cashHandovers.reduce((sum, row) => {
+    return sum + Number(row.amount);
+  }, 0);
+
+  return {
+    riderId: targetRiderId,
+    totalAmount,
+    cashHandovers,
+  };
+};
+
 export const riderServices = {
   updateRiderProfile,
   updateRiderHub,
@@ -469,4 +548,5 @@ export const riderServices = {
   getSingleRiderByEmail,
   getAllParcelByRider,
   deleteRiderById,
+  getRiderCashHistory,
 };

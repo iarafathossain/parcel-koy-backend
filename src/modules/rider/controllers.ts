@@ -169,6 +169,32 @@ const deleteRiderById = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getRiderCashHistory = catchAsync(async (req: Request, res: Response) => {
+  const user = req.user;
+
+  if (!user) {
+    throw new AppError(
+      status.UNAUTHORIZED,
+      "Unauthorized Access! User not found in request",
+    );
+  }
+
+  const riderIdFromQuery =
+    typeof req.query.riderId === "string" ? req.query.riderId : undefined;
+
+  const result = await riderServices.getRiderCashHistory(
+    user,
+    riderIdFromQuery,
+  );
+
+  sendResponse(res, {
+    httpStatusCode: status.OK,
+    success: true,
+    message: "Rider cash handovers retrieved successfully",
+    data: result,
+  });
+});
+
 export const riderControllers = {
   updateRiderProfile,
   updateRiderHub,
@@ -178,4 +204,5 @@ export const riderControllers = {
   getSingleRiderByEmail,
   getAllParcelByRider,
   deleteRiderById,
+  getRiderCashHistory,
 };
