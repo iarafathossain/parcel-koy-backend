@@ -11,6 +11,9 @@ model Payout {
     merchantId String   @db.Uuid
     merchant   Merchant @relation("MerchantPayouts", fields: [merchantId], references: [id])
 
+    paymentAccountId String         @db.Uuid
+    paymentAccount   PaymentAccount @relation(fields: [paymentAccountId], references: [id])
+
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 

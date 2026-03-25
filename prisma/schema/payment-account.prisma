@@ -1,0 +1,27 @@
+model PaymentAccount {
+    id         String   @id @default(uuid(7)) @db.Uuid
+    merchantId String   @db.Uuid
+    merchant   Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+    providerType PaymentProviderType
+    providerName String
+
+    accountName String
+
+    accountNumber String
+
+    // Only needed for Banks
+    branchName    String?
+    routingNumber String?
+
+    isDefault Boolean @default(false)
+    isActive  Boolean @default(true)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    payouts Payout[]
+
+    @@index([merchantId], name: "idx_payment_account_merchant_id")
+    @@map("payment_accounts")
+}

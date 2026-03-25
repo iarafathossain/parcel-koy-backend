@@ -51,3 +51,10 @@ enum MethodType {
     PICKUP
     DELIVERY
 }
+
+enum PaymentProviderType {
+    BANK
+    BKASH
+    NAGAD
+    ROCKET
+}

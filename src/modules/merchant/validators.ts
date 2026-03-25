@@ -46,6 +46,7 @@ export const makePaymentRequestZodSchema = zod.object({
       error: "Amount must be a valid number",
     })
     .positive("Amount must be greater than 0"),
+  paymentAccountId: zod.uuid("Payment Account ID must be a valid UUID"),
 });
 
 export type UpdateMerchantProfilePayload = zod.infer<

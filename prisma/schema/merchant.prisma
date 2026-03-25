@@ -14,8 +14,9 @@ model Merchant {
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    parcels Parcel[]
-    payouts Payout[] @relation("MerchantPayouts")
+    parcels         Parcel[]
+    payouts         Payout[]         @relation("MerchantPayouts")
+    paymentAccounts PaymentAccount[]
 
     @@index([userId], name: "idx_merchant_user_id")
     @@map("merchants")

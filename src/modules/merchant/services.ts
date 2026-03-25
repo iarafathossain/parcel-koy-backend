@@ -380,6 +380,22 @@ const makePaymentRequest = async (
     throw new AppError(status.NOT_FOUND, "Merchant profile not found");
   }
 
+  // validate payment account belongs to the merchant
+  const paymentAccount = await prisma.paymentAccount.findFirst({
+    where: {
+      id: payload.paymentAccountId,
+      merchantId: merchant.id,
+      isActive: true,
+    },
+  });
+
+  if (!paymentAccount) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      "Invalid or inactive payment account selected. Please check your bank details.",
+    );
+  }
+
   const currentBalance = Number(merchant.balance);
 
   // 2. Simply check if they have enough in their wallet
@@ -397,6 +413,10 @@ const makePaymentRequest = async (
         merchantId: merchant.id,
         amount: payload.amount,
         status: PayoutStatus.PENDING,
+        paymentAccountId: payload.paymentAccountId,
+      },
+      include: {
+        paymentAccount: true,
       },
     });
 
