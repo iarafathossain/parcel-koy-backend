@@ -6,9 +6,18 @@ import qs from "qs";
 import { auth } from "./libs/auth";
 import { globalErrorHandler } from "./middlewares/global-error-handler";
 import { notFoundHandler } from "./middlewares/not-found";
+import { webhookControllers } from "./modules/webhook/controller";
 import { indexRoutes } from "./routes/index";
 
 const app: Application = express();
+
+// 1. WEBHOOK ROUTE GOES FIRST!
+// Use express.raw() so req.body remains a Buffer for signature verification
+app.post(
+  "/api/v1/webhooks/stripe",
+  express.raw({ type: "application/json" }),
+  webhookControllers.handleStripeWebhook,
+);
 
 app.set("query parser", (str: string) => qs.parse(str));
 app.set("view engine", "ejs");

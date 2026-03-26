@@ -52,6 +52,9 @@ export interface IEnvConfig {
 
   DELIVERY_MASTER_OTP: string;
   OTP_EXPIRATION_MINUTES: string;
+
+  CLEAR_DUE_PAYMENT_SUCCESS_URL: string;
+  CLEAR_DUE_PAYMENT_CANCEL_URL: string;
 }
 
 export interface IErrorSource {

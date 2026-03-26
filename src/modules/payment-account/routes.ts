@@ -26,4 +26,11 @@ router.post(
   paymentAccountControllers.verifyConnectAccount,
 );
 
+// POST: /api/v1/payment-accounts/clear-due/checkout
+router.post(
+  "/clear-due/checkout",
+  checkAuth(Role.MERCHANT),
+  paymentAccountControllers.generateClearDueCheckout,
+);
+
 export const paymentAccountRoutes = router;

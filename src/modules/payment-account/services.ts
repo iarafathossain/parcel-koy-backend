@@ -105,7 +105,62 @@ const verifyStripeConnectAccount = async (
   };
 };
 
+const createClearDueCheckout = async (
+  currentUser: IRequestUser,
+  successUrl: string,
+  cancelUrl: string,
+) => {
+  const merchant = await prisma.merchant.findUnique({
+    where: { userId: currentUser.userId },
+  });
+
+  if (!merchant) throw new AppError(status.NOT_FOUND, "Merchant not found");
+
+  const currentBalance = Number(merchant.balance);
+
+  // If balance is 0 or positive, they don't owe anything
+  if (currentBalance >= 0) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      "You do not have any due balance to clear.",
+    );
+  }
+
+  // Convert negative balance to positive absolute value, then to cents for Stripe
+  const amountToPay = Math.abs(currentBalance);
+  const amountInCents = Math.round(amountToPay * 100);
+
+  // Create a Stripe Checkout Session where the platform collects the money
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ["card"],
+    line_items: [
+      {
+        price_data: {
+          currency: "usd", // Make sure this matches your platform currency
+          product_data: {
+            name: "Clear Platform Due Balance",
+            description: `Payment to clear negative balance for ${merchant.businessName}`,
+          },
+          unit_amount: amountInCents,
+        },
+        quantity: 1,
+      },
+    ],
+    mode: "payment",
+    // {CHECKOUT_SESSION_ID} is a Stripe macro that will be replaced with the actual ID
+    success_url: `${successUrl}?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: cancelUrl,
+    metadata: {
+      merchantId: merchant.id,
+      type: "CLEAR_DUE",
+    },
+  });
+
+  return { url: session.url };
+};
+
 export const paymentAccountServices = {
   createStripeConnectOnboardingLink,
   verifyStripeConnectAccount,
+  createClearDueCheckout,
 };

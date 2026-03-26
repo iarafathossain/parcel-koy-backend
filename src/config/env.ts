@@ -35,6 +35,8 @@ const loadEnvironmentVariables = (): IEnvConfig => {
     "SUPER_ADMIN_PHONE",
     "DELIVERY_MASTER_OTP",
     "OTP_EXPIRATION_MINUTES",
+    "CLEAR_DUE_PAYMENT_SUCCESS_URL",
+    "CLEAR_DUE_PAYMENT_CANCEL_URL",
   ];
 
   requiredEnvVars.forEach((variable) => {
@@ -83,6 +85,8 @@ const loadEnvironmentVariables = (): IEnvConfig => {
     SUPER_ADMIN_PHONE: process.env.SUPER_ADMIN_PHONE!,
     DELIVERY_MASTER_OTP: process.env.DELIVERY_MASTER_OTP!,
     OTP_EXPIRATION_MINUTES: process.env.OTP_EXPIRATION_MINUTES!,
+    CLEAR_DUE_PAYMENT_SUCCESS_URL: process.env.CLEAR_DUE_PAYMENT_SUCCESS_URL!,
+    CLEAR_DUE_PAYMENT_CANCEL_URL: process.env.CLEAR_DUE_PAYMENT_CANCEL_URL!,
   };
 };
 
