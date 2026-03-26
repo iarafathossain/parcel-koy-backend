@@ -6,6 +6,7 @@ import { Prisma } from "../../generated/prisma/client";
 import { PayoutStatus } from "../../generated/prisma/enums";
 import { IRequestUser } from "../../interfaces/auth-type";
 import { prisma } from "../../libs/prisma";
+import { notificationServices } from "../notification/services";
 import { RequestPayoutPayload } from "./validators";
 
 const stripe = new Stripe(envVariables.STRIPE.STRIPE_SECRET_KEY);
@@ -66,6 +67,33 @@ const createPayoutRequest = async (
     return newPayout;
   });
 
+  // Find the hub manager of the merchant's origin area
+  const originArea = await prisma.area.findUnique({
+    where: { id: merchant.originAreaId || "" },
+    select: { hubID: true },
+  });
+
+  if (originArea?.hubID) {
+    const hubManager = await prisma.admin.findFirst({
+      where: {
+        managedHubs: {
+          some: {
+            id: originArea.hubID,
+          },
+        },
+      },
+      select: { userId: true },
+    });
+
+    if (hubManager) {
+      await notificationServices.sendNotification(
+        hubManager.userId,
+        "New Payout Request",
+        `${merchant.businessName} has requested a payout of ${amount} BDT.`,
+      );
+    }
+  }
+
   return payout;
 };
 
@@ -124,6 +152,13 @@ const processStripePayout = async (payoutId: string) => {
       },
     });
 
+    // NOTIFICATION INJECTION: Notify Merchant of Success
+    await notificationServices.sendNotification(
+      payout.merchant.userId,
+      "Payout Successful",
+      `Your payout request for $${payout.amount} has been successfully transferred to your bank.`,
+    );
+
     return {
       payoutId: updatedPayout.id,
       transferId: transfer.id,
@@ -147,6 +182,13 @@ const processStripePayout = async (payoutId: string) => {
         data: { balance: { increment: payout.amount } },
       });
     });
+
+    // NOTIFICATION INJECTION: Notify Merchant of Failure
+    await notificationServices.sendNotification(
+      payout.merchant.userId,
+      "Payout Failed",
+      `Your payout request for $${payout.amount} failed. The funds have been returned to your platform balance.`,
+    );
 
     throw new AppError(status.BAD_GATEWAY, `Transfer failed: ${error.message}`);
   }

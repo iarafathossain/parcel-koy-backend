@@ -3,6 +3,7 @@ import cookieParser from "cookie-parser";
 import express, { Application } from "express";
 import path from "path";
 import qs from "qs";
+import { startNotificationCleanupJob } from "./jobs/notification-cleanup";
 import { auth } from "./libs/auth";
 import { globalErrorHandler } from "./middlewares/global-error-handler";
 import { notFoundHandler } from "./middlewares/not-found";
@@ -13,6 +14,7 @@ const app: Application = express();
 
 // 1. WEBHOOK ROUTE GOES FIRST!
 // Use express.raw() so req.body remains a Buffer for signature verification
+//TODO: check todo file
 app.post(
   "/api/v1/webhooks/stripe",
   express.raw({ type: "application/json" }),
@@ -37,6 +39,9 @@ app.all("/api/auth/{*any}", toNodeHandler(auth));
 
 // Use the index routes
 app.use("/api/v1", indexRoutes);
+
+// Start background cron jobs
+startNotificationCleanupJob();
 
 // Root route renders an HTML file
 app.get("/", (_req, res) => {

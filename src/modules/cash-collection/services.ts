@@ -1,6 +1,7 @@
 import status from "http-status";
 import AppError from "../../errors/app-error";
 import { prisma } from "../../libs/prisma";
+import { notificationServices } from "../notification/services";
 import { CollectCashPayload } from "./validators";
 
 export const collectCash = async (
@@ -91,6 +92,20 @@ export const collectCash = async (
       },
     });
   });
+
+  // Notify rider of successful cash collection
+  const riderUser = await prisma.rider.findUnique({
+    where: { id: riderId },
+    select: { userId: true, cashInHand: true },
+  });
+
+  if (riderUser) {
+    await notificationServices.sendNotification(
+      riderUser.userId,
+      "Cash Collection Confirmation",
+      `${payload.amount} BDT has been collected from your cash in hand. Remaining balance: ${Number(riderUser.cashInHand) - payload.amount} BDT.`,
+    );
+  }
 };
 
 export const cashCollectionServices = {

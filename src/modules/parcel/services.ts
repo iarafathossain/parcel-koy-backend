@@ -5,6 +5,7 @@ import { ParcelStatus } from "../../generated/prisma/enums";
 import { prisma } from "../../libs/prisma";
 import { generateTrackingID } from "../../utils/generate-tracking-id";
 import { parseDurationToMs } from "../../utils/token";
+import { notificationServices } from "../notification/services";
 import {
   CancelParcelByMerchantPayload,
   CreateParcelPayload,
@@ -514,6 +515,29 @@ const updateParcelStatusByAdmin = async (
     return updated;
   });
 
+  // Notify merchant for key status updates
+  const KEY_STATUSES_FOR_MERCHANT = [
+    "PICKUP_RIDER_ASSIGNED",
+    "OUT_FOR_DELIVERY",
+    "RETURNED_TO_MERCHANT",
+    "ON_HOLD",
+  ];
+
+  if (KEY_STATUSES_FOR_MERCHANT.includes(payload.status)) {
+    const merchant = await prisma.merchant.findUnique({
+      where: { id: parcel.merchantId },
+      select: { userId: true },
+    });
+
+    if (merchant) {
+      await notificationServices.sendNotification(
+        merchant.userId,
+        `Parcel status updated to ${payload.status}`,
+        `Your parcel (${parcel.id}) status has been updated to ${payload.status}.`,
+      );
+    }
+  }
+
   return updatedParcel;
 };
 
@@ -588,6 +612,12 @@ const cancelParcelByMerchant = async (
 
     return updated;
   });
+
+  await notificationServices.sendNotification(
+    parcel.merchant.userId,
+    "Parcel cancelled",
+    `Your parcel has been cancelled. Tracking ID: ${parcel.id}`,
+  );
 
   return updatedParcel;
 };
@@ -727,6 +757,17 @@ const updateParcelStatusByRider = async (
 
     return updated;
   });
+
+  if (
+    payload.status === "PICKUP_FAILED" ||
+    payload.status === "DELIVERY_FAILED"
+  ) {
+    await notificationServices.sendNotification(
+      userId,
+      "Parcel cancellation/update notice",
+      `You updated parcel status to ${payload.status}. Parcel ID: ${parcelId}`,
+    );
+  }
 
   return updatedParcel;
 };
@@ -871,6 +912,19 @@ const verifyAndDeliverParcel = async (parcelId: string, otp: string) => {
       },
     }),
   ]);
+
+  const merchantUser = await prisma.merchant.findUnique({
+    where: { id: existingParcel.merchantId },
+    select: { userId: true },
+  });
+
+  if (merchantUser) {
+    await notificationServices.sendNotification(
+      merchantUser.userId,
+      "Parcel delivered",
+      `Your parcel has been delivered successfully. Parcel ID: ${existingParcel.id}`,
+    );
+  }
 };
 
 const getParcelHubTracking = async (trackingId: string) => {
