@@ -3,9 +3,11 @@ model Payout {
     amount Decimal      @db.Decimal(10, 2)
     status PayoutStatus @default(PENDING)
 
-    transactionId String? @db.VarChar(300)
-    paymentMethod String?
-    adminNote     String? @db.Text
+    transactionId      String? @db.VarChar(300)
+    stripeEventId      String? @db.VarChar(300)
+    paymentGatewayData Json?
+    paymentMethod      String?
+    adminNote          String? @db.Text
 
     // Relations
     merchantId String   @db.Uuid
