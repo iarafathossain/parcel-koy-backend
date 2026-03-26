@@ -1,14 +1,11 @@
 import status from "http-status";
+import Stripe from "stripe";
+import { envVariables } from "../../config/env";
 import AppError from "../../errors/app-error";
 import { IRequestUser } from "../../interfaces/auth-type";
 import { prisma } from "../../libs/prisma";
-import {
-  AddPaymentAccountPayload,
-  UpdatePaymentAccountPayload,
-} from "./validators";
 
-const BANK_PROVIDER = "BANK";
-const STRIPE_PROVIDER = "STRIPE";
+const stripe = new Stripe(envVariables.STRIPE.STRIPE_SECRET_KEY);
 
 const ensureMerchantOrAdmin = (currentUser: IRequestUser) => {
   if (currentUser.role !== "MERCHANT" && currentUser.role !== "ADMIN") {
@@ -19,414 +16,96 @@ const ensureMerchantOrAdmin = (currentUser: IRequestUser) => {
   }
 };
 
-const resolveMerchantIdForAdd = async (
-  payload: AddPaymentAccountPayload,
+const createStripeConnectOnboardingLink = async (
   currentUser: IRequestUser,
+  successReturnUrl: string,
+  refreshUrl: string,
 ) => {
-  if (currentUser.role === "MERCHANT") {
-    const merchant = await prisma.merchant.findUnique({
-      where: {
-        userId: currentUser.userId,
-      },
-      select: {
-        id: true,
-      },
-    });
-
-    if (!merchant) {
-      throw new AppError(status.NOT_FOUND, "Merchant profile not found");
-    }
-
-    return merchant.id;
-  }
-
-  if (!payload.merchantId) {
-    throw new AppError(status.BAD_REQUEST, "merchantId is required for admin");
-  }
+  ensureMerchantOrAdmin(currentUser);
 
   const merchant = await prisma.merchant.findUnique({
-    where: {
-      id: payload.merchantId,
-    },
-    select: {
-      id: true,
-    },
+    where: { userId: currentUser.userId },
+    include: { user: true },
   });
 
-  if (!merchant) {
-    throw new AppError(status.NOT_FOUND, "Merchant not found");
-  }
+  if (!merchant)
+    throw new AppError(status.NOT_FOUND, "Merchant profile not found");
 
-  return merchant.id;
-};
+  let paymentAccount = await prisma.paymentAccount.findFirst({
+    where: { merchantId: merchant.id },
+  });
 
-const resolveAccountForActor = async (
-  paymentAccountId: string,
-  currentUser: IRequestUser,
-) => {
-  if (currentUser.role === "MERCHANT") {
-    const merchant = await prisma.merchant.findUnique({
-      where: {
-        userId: currentUser.userId,
-      },
-      select: {
-        id: true,
-      },
+  let accountId: string;
+
+  if (paymentAccount) {
+    accountId = paymentAccount.stripeConnectAccountId;
+  } else {
+    // 1. Create the Connect Express account in Stripe
+    const account = await stripe.accounts.create({
+      type: "express",
+      country: "US", // IMPORTANT: Use US or AE for testing if your Stripe account isn't approved for BD payouts yet
+      email: merchant.user.email,
+      capabilities: { transfers: { requested: true } },
+      business_type: "company",
+      company: { name: merchant.businessName },
     });
 
-    if (!merchant) {
-      throw new AppError(status.NOT_FOUND, "Merchant profile not found");
-    }
+    accountId = account.id;
 
-    const account = await prisma.paymentAccount.findFirst({
-      where: {
-        id: paymentAccountId,
+    // 2. Save the placeholder ID in your DB (inactive by default)
+    await prisma.paymentAccount.create({
+      data: {
         merchantId: merchant.id,
+        providerType: "STRIPE",
+        stripeConnectAccountId: accountId,
+        isActive: false,
       },
     });
-
-    if (!account) {
-      throw new AppError(status.NOT_FOUND, "Payment account not found");
-    }
-
-    return account;
   }
 
-  const account = await prisma.paymentAccount.findUnique({
-    where: {
-      id: paymentAccountId,
-    },
+  // 3. Generate the secure Stripe UI link
+  const accountLink = await stripe.accountLinks.create({
+    account: accountId,
+    refresh_url: refreshUrl,
+    return_url: `${successReturnUrl}?accountId=${accountId}`,
+    type: "account_onboarding",
   });
 
-  if (!account) {
-    throw new AppError(status.NOT_FOUND, "Payment account not found");
-  }
-
-  return account;
+  return { url: accountLink.url };
 };
 
-const addPaymentAccount = async (
-  payload: AddPaymentAccountPayload,
+const verifyStripeConnectAccount = async (
   currentUser: IRequestUser,
+  accountId: string,
 ) => {
   ensureMerchantOrAdmin(currentUser);
 
-  const merchantId = await resolveMerchantIdForAdd(payload, currentUser);
+  // 1. Ask Stripe if the user actually finished the form
+  const account = await stripe.accounts.retrieve(accountId);
 
-  const isStripeProvider = payload.providerType === STRIPE_PROVIDER;
-
-  if (isStripeProvider && !payload.stripePaymentMethodId) {
+  if (!account.details_submitted || !account.charges_enabled) {
     throw new AppError(
       status.BAD_REQUEST,
-      "stripePaymentMethodId is required for STRIPE provider",
+      "Stripe onboarding is incomplete. Please finish setting up your account.",
     );
   }
 
-  if (isStripeProvider && !payload.stripeCustomerId) {
-    throw new AppError(
-      status.BAD_REQUEST,
-      "stripeCustomerId is required for STRIPE provider",
-    );
-  }
-
-  if (!isStripeProvider && !payload.accountNumber) {
-    throw new AppError(
-      status.BAD_REQUEST,
-      "accountNumber is required for non-STRIPE providers",
-    );
-  }
-
-  const resolvedAccountNumber = isStripeProvider
-    ? (payload.accountNumber ??
-      payload.cardLast4 ??
-      payload.stripePaymentMethodId)
-    : payload.accountNumber;
-
-  const existing = isStripeProvider
-    ? await prisma.paymentAccount.findFirst({
-        where: {
-          merchantId,
-          stripePaymentMethodId: payload.stripePaymentMethodId,
-        } as any,
-        select: {
-          id: true,
-        },
-      })
-    : await prisma.paymentAccount.findFirst({
-        where: {
-          merchantId,
-          providerType: payload.providerType as any,
-          accountNumber: resolvedAccountNumber,
-        },
-        select: {
-          id: true,
-        },
-      });
-
-  if (existing) {
-    throw new AppError(
-      status.CONFLICT,
-      "This payment account already exists for the merchant",
-    );
-  }
-
-  const hasDefault = await prisma.paymentAccount.findFirst({
-    where: {
-      merchantId,
+  // 2. Mark the account as active and default so payouts can proceed
+  await prisma.paymentAccount.update({
+    where: { stripeConnectAccountId: accountId },
+    data: {
+      isActive: true,
       isDefault: true,
     },
-    select: {
-      id: true,
-    },
   });
 
-  const shouldBeDefault = payload.isDefault ?? !hasDefault;
-
-  return await prisma.$transaction(async (tx) => {
-    if (shouldBeDefault) {
-      await tx.paymentAccount.updateMany({
-        where: {
-          merchantId,
-          isDefault: true,
-        },
-        data: {
-          isDefault: false,
-        },
-      });
-    }
-
-    return await tx.paymentAccount.create({
-      data: {
-        merchantId,
-        providerType: payload.providerType as any,
-        providerName: payload.providerName,
-        accountName: payload.accountName,
-        accountNumber: resolvedAccountNumber as string,
-        branchName:
-          payload.providerType === BANK_PROVIDER ? payload.branchName : null,
-        routingNumber:
-          payload.providerType === BANK_PROVIDER ? payload.routingNumber : null,
-        stripeCustomerId: isStripeProvider ? payload.stripeCustomerId : null,
-        stripePaymentMethodId: isStripeProvider
-          ? payload.stripePaymentMethodId
-          : null,
-        stripePaymentMethodType: isStripeProvider
-          ? (payload.stripePaymentMethodType ?? null)
-          : null,
-        cardBrand: isStripeProvider ? (payload.cardBrand ?? null) : null,
-        cardLast4: isStripeProvider ? (payload.cardLast4 ?? null) : null,
-        cardExpMonth: isStripeProvider ? (payload.cardExpMonth ?? null) : null,
-        cardExpYear: isStripeProvider ? (payload.cardExpYear ?? null) : null,
-        billingEmail: isStripeProvider ? (payload.billingEmail ?? null) : null,
-        isDefault: shouldBeDefault,
-      } as any,
-    });
-  });
-};
-
-const updatePaymentAccount = async (
-  paymentAccountId: string,
-  payload: UpdatePaymentAccountPayload,
-  currentUser: IRequestUser,
-) => {
-  ensureMerchantOrAdmin(currentUser);
-
-  const existing = await resolveAccountForActor(paymentAccountId, currentUser);
-  const existingAccount = existing as any;
-
-  const targetProviderType = payload.providerType ?? existing.providerType;
-  const targetBranchName = payload.branchName ?? existingAccount.branchName;
-  const targetRoutingNumber =
-    payload.routingNumber ?? existingAccount.routingNumber;
-  const targetStripeCustomerId =
-    payload.stripeCustomerId ?? existingAccount.stripeCustomerId;
-  const targetStripePaymentMethodId =
-    payload.stripePaymentMethodId ?? existingAccount.stripePaymentMethodId;
-  const targetAccountNumber =
-    targetProviderType === STRIPE_PROVIDER
-      ? (payload.accountNumber ??
-        payload.cardLast4 ??
-        existingAccount.cardLast4 ??
-        payload.stripePaymentMethodId ??
-        existingAccount.stripePaymentMethodId ??
-        existing.accountNumber)
-      : (payload.accountNumber ?? existing.accountNumber);
-
-  if (
-    targetProviderType === BANK_PROVIDER &&
-    (!targetBranchName || !targetRoutingNumber)
-  ) {
-    throw new AppError(
-      status.BAD_REQUEST,
-      "branchName and routingNumber are required for BANK provider type",
-    );
-  }
-
-  if (
-    targetProviderType === STRIPE_PROVIDER &&
-    (!targetStripeCustomerId || !targetStripePaymentMethodId)
-  ) {
-    throw new AppError(
-      status.BAD_REQUEST,
-      "stripeCustomerId and stripePaymentMethodId are required for STRIPE provider",
-    );
-  }
-
-  const duplicate =
-    targetProviderType === STRIPE_PROVIDER
-      ? await prisma.paymentAccount.findFirst({
-          where: {
-            merchantId: existing.merchantId,
-            stripePaymentMethodId: targetStripePaymentMethodId,
-            id: {
-              not: existing.id,
-            },
-          } as any,
-          select: {
-            id: true,
-          },
-        })
-      : await prisma.paymentAccount.findFirst({
-          where: {
-            merchantId: existing.merchantId,
-            providerType: targetProviderType as any,
-            accountNumber: targetAccountNumber,
-            id: {
-              not: existing.id,
-            },
-          },
-          select: {
-            id: true,
-          },
-        });
-
-  if (duplicate) {
-    throw new AppError(
-      status.CONFLICT,
-      "Another payment account with the same provider and account number already exists",
-    );
-  }
-
-  return await prisma.paymentAccount.update({
-    where: {
-      id: existing.id,
-    },
-    data: {
-      providerType: payload.providerType as any,
-      providerName: payload.providerName,
-      accountName: payload.accountName,
-      accountNumber: targetAccountNumber,
-      branchName:
-        targetProviderType === BANK_PROVIDER
-          ? (payload.branchName ?? existingAccount.branchName)
-          : null,
-      routingNumber:
-        targetProviderType === BANK_PROVIDER
-          ? (payload.routingNumber ?? existingAccount.routingNumber)
-          : null,
-      stripeCustomerId:
-        targetProviderType === STRIPE_PROVIDER ? targetStripeCustomerId : null,
-      stripePaymentMethodId:
-        targetProviderType === STRIPE_PROVIDER
-          ? targetStripePaymentMethodId
-          : null,
-      stripePaymentMethodType:
-        targetProviderType === STRIPE_PROVIDER
-          ? (payload.stripePaymentMethodType ??
-            existingAccount.stripePaymentMethodType ??
-            null)
-          : null,
-      cardBrand:
-        targetProviderType === STRIPE_PROVIDER
-          ? (payload.cardBrand ?? existingAccount.cardBrand ?? null)
-          : null,
-      cardLast4:
-        targetProviderType === STRIPE_PROVIDER
-          ? (payload.cardLast4 ?? existingAccount.cardLast4 ?? null)
-          : null,
-      cardExpMonth:
-        targetProviderType === STRIPE_PROVIDER
-          ? (payload.cardExpMonth ?? existingAccount.cardExpMonth ?? null)
-          : null,
-      cardExpYear:
-        targetProviderType === STRIPE_PROVIDER
-          ? (payload.cardExpYear ?? existingAccount.cardExpYear ?? null)
-          : null,
-      billingEmail:
-        targetProviderType === STRIPE_PROVIDER
-          ? (payload.billingEmail ?? existingAccount.billingEmail ?? null)
-          : null,
-    } as any,
-  });
-};
-
-const toggleActivePaymentAccount = async (
-  paymentAccountId: string,
-  currentUser: IRequestUser,
-) => {
-  ensureMerchantOrAdmin(currentUser);
-
-  const existing = await resolveAccountForActor(paymentAccountId, currentUser);
-
-  const nextActiveState = !existing.isActive;
-
-  if (existing.isDefault && !nextActiveState) {
-    throw new AppError(
-      status.BAD_REQUEST,
-      "Default payment account cannot be deactivated. Set another default account first",
-    );
-  }
-
-  return await prisma.paymentAccount.update({
-    where: {
-      id: existing.id,
-    },
-    data: {
-      isActive: nextActiveState,
-    },
-  });
-};
-
-const setDefaultPaymentAccount = async (
-  paymentAccountId: string,
-  currentUser: IRequestUser,
-) => {
-  ensureMerchantOrAdmin(currentUser);
-
-  const existing = await resolveAccountForActor(paymentAccountId, currentUser);
-
-  if (!existing.isActive) {
-    throw new AppError(
-      status.BAD_REQUEST,
-      "Inactive payment account cannot be set as default",
-    );
-  }
-
-  return await prisma.$transaction(async (tx) => {
-    await tx.paymentAccount.updateMany({
-      where: {
-        merchantId: existing.merchantId,
-        isDefault: true,
-      },
-      data: {
-        isDefault: false,
-      },
-    });
-
-    return await tx.paymentAccount.update({
-      where: {
-        id: existing.id,
-      },
-      data: {
-        isDefault: true,
-      },
-    });
-  });
+  return {
+    success: true,
+    message: "Stripe Connect account successfully verified and activated.",
+  };
 };
 
 export const paymentAccountServices = {
-  addPaymentAccount,
-  updatePaymentAccount,
-  toggleActivePaymentAccount,
-  setDefaultPaymentAccount,
+  createStripeConnectOnboardingLink,
+  verifyStripeConnectAccount,
 };

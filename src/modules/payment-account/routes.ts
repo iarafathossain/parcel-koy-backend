@@ -4,40 +4,26 @@ import { checkAuth } from "../../middlewares/check-auth";
 import { validateRequest } from "../../middlewares/validate-request";
 import { paymentAccountControllers } from "./controllers";
 import {
-  addPaymentAccountZodSchema,
-  updatePaymentAccountZodSchema,
+  stripeConnectOnboardingZodSchema,
+  verifyStripeConnectZodSchema,
 } from "./validators";
 
 const router = Router();
 
-// POST: /api/v1/payment-accounts - Add a payment account (Merchant, Admin)
+// POST: /api/v1/payment-accounts/stripe-connect/onboard
 router.post(
-  "/",
-  validateRequest(addPaymentAccountZodSchema),
-  checkAuth(Role.MERCHANT, Role.ADMIN),
-  paymentAccountControllers.addPaymentAccount,
+  "/stripe-connect/onboard",
+  validateRequest(stripeConnectOnboardingZodSchema),
+  checkAuth(Role.MERCHANT),
+  paymentAccountControllers.generateConnectLink,
 );
 
-// PATCH: /api/v1/payment-accounts/:id - Update a payment account (Merchant, Admin)
-router.patch(
-  "/:id",
-  validateRequest(updatePaymentAccountZodSchema),
-  checkAuth(Role.MERCHANT, Role.ADMIN),
-  paymentAccountControllers.updatePaymentAccount,
-);
-
-// PATCH: /api/v1/payment-accounts/:id/toggle-active - Toggle active status (Merchant, Admin)
-router.patch(
-  "/:id/toggle-active",
-  checkAuth(Role.MERCHANT, Role.ADMIN),
-  paymentAccountControllers.toggleActivePaymentAccount,
-);
-
-// PATCH: /api/v1/payment-accounts/:id/set-default - Set default account (Merchant, Admin)
-router.patch(
-  "/:id/set-default",
-  checkAuth(Role.MERCHANT, Role.ADMIN),
-  paymentAccountControllers.setDefaultPaymentAccount,
+// POST: /api/v1/payment-accounts/stripe-connect/verify
+router.post(
+  "/stripe-connect/verify",
+  validateRequest(verifyStripeConnectZodSchema),
+  checkAuth(Role.MERCHANT),
+  paymentAccountControllers.verifyConnectAccount,
 );
 
 export const paymentAccountRoutes = router;

@@ -1,387 +1,158 @@
+import status from "http-status";
 import Stripe from "stripe";
 import { envVariables } from "../../config/env";
+import AppError from "../../errors/app-error";
 import { Prisma } from "../../generated/prisma/client";
-import {
-  PaymentProviderType,
-  PayoutStatus,
-} from "../../generated/prisma/enums";
+import { PayoutStatus } from "../../generated/prisma/enums";
+import { IRequestUser } from "../../interfaces/auth-type";
 import { prisma } from "../../libs/prisma";
+import { RequestPayoutPayload } from "./validators";
 
 const stripe = new Stripe(envVariables.STRIPE.STRIPE_SECRET_KEY);
 
-const getPayoutIdFromMetadata = (
-  metadata: Record<string, string> | null | undefined,
+const createPayoutRequest = async (
+  currentUser: IRequestUser,
+  payload: RequestPayoutPayload,
 ) => {
-  if (!metadata) {
-    return null;
+  const { amount } = payload;
+
+  // 1. Find the merchant
+  const merchant = await prisma.merchant.findUnique({
+    where: { userId: currentUser.userId },
+  });
+
+  if (!merchant) throw new AppError(status.NOT_FOUND, "Merchant not found");
+
+  // 2. Check if the merchant has enough balance
+  if (Number(merchant.balance) < amount) {
+    throw new AppError(status.BAD_REQUEST, "Insufficient platform balance");
   }
 
-  return (
-    metadata.payoutId ?? metadata.paymentId ?? metadata.withdrawalId ?? null
-  );
-};
-
-const handleStripeWebhookEvent = async (event: Stripe.Event) => {
-  const existingProcessedEvent = await prisma.payout.findFirst({
+  // 3. Find their active Stripe Connect payment account
+  const paymentAccount = await prisma.paymentAccount.findFirst({
     where: {
-      stripeEventId: event.id,
-    },
-    select: {
-      id: true,
+      merchantId: merchant.id,
+      isActive: true, // Must have finished Stripe onboarding
     },
   });
 
-  if (existingProcessedEvent) {
-    return {
-      message: `Stripe event ${event.id} already processed. Skipping.`,
-      payoutId: existingProcessedEvent.id,
-    };
+  if (!paymentAccount) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      "No active Stripe account found. Please complete payment onboarding first.",
+    );
   }
 
-  switch (event.type) {
-    case "checkout.session.completed": {
-      const session = event.data.object as Stripe.Checkout.Session;
-      const payoutId = getPayoutIdFromMetadata(session.metadata);
+  // 4. Execute a Database Transaction (Create Payout + Deduct Balance)
+  const payout = await prisma.$transaction(async (tx) => {
+    // A. Create the Pending Payout record
+    const newPayout = await tx.payout.create({
+      data: {
+        merchantId: merchant.id,
+        paymentAccountId: paymentAccount.id,
+        amount: amount,
+        status: PayoutStatus.PENDING,
+      },
+    });
 
-      if (!payoutId) {
-        return {
-          message:
-            "No payout ID found in checkout session metadata. Event skipped.",
-        };
-      }
+    // B. Deduct the amount from the merchant's balance immediately
+    await tx.merchant.update({
+      where: { id: merchant.id },
+      data: {
+        balance: { decrement: amount },
+      },
+    });
 
-      const payout = await prisma.payout.findUnique({
-        where: { id: payoutId },
-        select: { id: true, status: true },
-      });
+    return newPayout;
+  });
 
-      if (!payout) {
-        return {
-          message: `No payout found with ID ${payoutId}. Event skipped.`,
-        };
-      }
-
-      if (payout.status === PayoutStatus.COMPLETED) {
-        return {
-          message: `Payout ${payoutId} is already completed. Skipping update.`,
-          payoutId,
-        };
-      }
-
-      const nextStatus =
-        session.payment_status === "paid"
-          ? PayoutStatus.COMPLETED
-          : PayoutStatus.REJECTED;
-
-      await prisma.payout.update({
-        where: { id: payoutId },
-        data: {
-          status: nextStatus,
-          stripeEventId: event.id,
-          transactionId:
-            session.payment_intent && typeof session.payment_intent === "string"
-              ? session.payment_intent
-              : session.id,
-          paymentMethod: "STRIPE",
-          paymentGatewayData: session as unknown as Prisma.InputJsonValue,
-        },
-      });
-
-      return {
-        message: `Payout ${payoutId} updated to ${nextStatus}.`,
-        payoutId,
-      };
-    }
-
-    case "checkout.session.expired": {
-      const session = event.data.object as Stripe.Checkout.Session;
-      const payoutId = getPayoutIdFromMetadata(session.metadata);
-
-      if (!payoutId) {
-        return {
-          message:
-            "No payout ID found in expired checkout session metadata. Event skipped.",
-        };
-      }
-
-      const payout = await prisma.payout.findUnique({
-        where: { id: payoutId },
-        select: { id: true, status: true, amount: true, merchantId: true },
-      });
-
-      if (!payout) {
-        return {
-          message: `No payout found with ID ${payoutId}. Event skipped.`,
-        };
-      }
-
-      if (payout.status !== PayoutStatus.PENDING) {
-        return {
-          message: `Payout ${payoutId} is not pending. Skipping rollback.`,
-          payoutId,
-        };
-      }
-
-      await prisma.$transaction(async (tx) => {
-        await tx.payout.update({
-          where: { id: payoutId },
-          data: {
-            status: PayoutStatus.REJECTED,
-            stripeEventId: event.id,
-            transactionId: session.id,
-            paymentMethod: "STRIPE",
-            paymentGatewayData: session as unknown as Prisma.InputJsonValue,
-            adminNote: "Stripe checkout session expired.",
-          },
-        });
-
-        await tx.merchant.update({
-          where: { id: payout.merchantId },
-          data: {
-            balance: {
-              increment: payout.amount,
-            },
-          },
-        });
-      });
-
-      return {
-        message: `Payout ${payoutId} rejected and balance restored.`,
-        payoutId,
-      };
-    }
-
-    case "payment_intent.payment_failed": {
-      const paymentIntent = event.data.object as Stripe.PaymentIntent;
-      const payoutId = getPayoutIdFromMetadata(paymentIntent.metadata);
-
-      if (!payoutId) {
-        return {
-          message:
-            "No payout ID found in payment intent metadata. Event skipped.",
-        };
-      }
-
-      const payout = await prisma.payout.findUnique({
-        where: { id: payoutId },
-        select: { id: true, status: true, amount: true, merchantId: true },
-      });
-
-      if (!payout) {
-        return {
-          message: `No payout found with ID ${payoutId}. Event skipped.`,
-        };
-      }
-
-      if (payout.status !== PayoutStatus.PENDING) {
-        return {
-          message: `Payout ${payoutId} is not pending. Skipping rollback.`,
-          payoutId,
-        };
-      }
-
-      await prisma.$transaction(async (tx) => {
-        await tx.payout.update({
-          where: { id: payoutId },
-          data: {
-            status: PayoutStatus.REJECTED,
-            stripeEventId: event.id,
-            transactionId: paymentIntent.id,
-            paymentMethod: "STRIPE",
-            paymentGatewayData:
-              paymentIntent as unknown as Prisma.InputJsonValue,
-            adminNote: "Stripe payment intent failed.",
-          },
-        });
-
-        await tx.merchant.update({
-          where: { id: payout.merchantId },
-          data: {
-            balance: {
-              increment: payout.amount,
-            },
-          },
-        });
-      });
-
-      return {
-        message: `Payout ${payoutId} rejected and balance restored.`,
-        payoutId,
-      };
-    }
-
-    default:
-      return {
-        message: `Unhandled Stripe event type: ${event.type}`,
-      };
-  }
+  return payout;
 };
 
-const createStripeCheckoutSessionForPayout = async (
-  payoutId: string,
-  payload: {
-    successUrl?: string;
-    cancelUrl?: string;
-  },
-) => {
+const processStripePayout = async (payoutId: string) => {
   const payout = await prisma.payout.findUnique({
-    where: {
-      id: payoutId,
-    },
+    where: { id: payoutId },
     include: {
-      merchant: {
-        include: {
-          user: true,
-        },
-      },
+      merchant: true,
       paymentAccount: true,
     },
   });
 
-  if (!payout) {
-    throw new Error("Payout not found");
-  }
-
-  if (payout.status !== PayoutStatus.PENDING) {
-    throw new Error("Only pending payouts can be processed with Stripe");
-  }
+  if (!payout) throw new AppError(status.NOT_FOUND, "Payout not found");
+  if (payout.status !== PayoutStatus.PENDING)
+    throw new AppError(
+      status.BAD_REQUEST,
+      "Only pending payouts can be processed",
+    );
 
   if (!payout.paymentAccount.isActive) {
-    throw new Error("Payment account is inactive");
-  }
-
-  if (payout.paymentAccount.providerType !== PaymentProviderType.STRIPE) {
-    throw new Error("Selected payment account is not a Stripe account");
+    throw new AppError(
+      status.BAD_REQUEST,
+      "Merchant's Stripe account is inactive or onboarding is incomplete.",
+    );
   }
 
   const amountInSmallestUnit = Math.round(Number(payout.amount) * 100);
 
   if (amountInSmallestUnit <= 0) {
-    throw new Error("Payout amount must be greater than zero");
+    throw new AppError(
+      status.BAD_REQUEST,
+      "Payout amount must be greater than zero",
+    );
   }
-
-  const successUrl =
-    payload.successUrl ??
-    `${envVariables.FRONTEND_URL}/admin/payouts/success?payoutId=${payout.id}`;
-  const cancelUrl =
-    payload.cancelUrl ??
-    `${envVariables.FRONTEND_URL}/admin/payouts/cancel?payoutId=${payout.id}`;
-
-  const checkoutSessionPayload: Stripe.Checkout.SessionCreateParams = {
-    mode: "payment",
-    payment_method_types: ["card"],
-    line_items: [
-      {
-        price_data: {
-          currency: "bdt",
-          unit_amount: amountInSmallestUnit,
-          product_data: {
-            name: `Merchant payout - ${payout.merchant.businessName}`,
-            description: `Payout ID: ${payout.id}`,
-          },
-        },
-        quantity: 1,
-      },
-    ],
-    metadata: {
-      payoutId: payout.id,
-      merchantId: payout.merchantId,
-      paymentAccountId: payout.paymentAccountId,
-    },
-    success_url: successUrl,
-    cancel_url: cancelUrl,
-  };
-
-  const fallbackEmail =
-    payout.paymentAccount.billingEmail ?? payout.merchant.user.email;
-
-  if (payout.paymentAccount.stripeCustomerId) {
-    checkoutSessionPayload.customer = payout.paymentAccount.stripeCustomerId;
-  } else {
-    if (!fallbackEmail) {
-      throw new Error(
-        "No Stripe customer ID or fallback email found for checkout session",
-      );
-    }
-
-    checkoutSessionPayload.customer_email = fallbackEmail;
-  }
-
-  let checkoutSession: Stripe.Checkout.Session;
 
   try {
-    checkoutSession = await stripe.checkout.sessions.create(
-      checkoutSessionPayload,
-    );
-  } catch (error: unknown) {
-    const stripeError = error as Stripe.StripeRawError & {
-      code?: string;
-      param?: string;
-      type?: string;
-    };
-
-    const isMissingCustomerError =
-      stripeError?.type === "invalid_request_error" &&
-      stripeError?.code === "resource_missing" &&
-      stripeError?.param === "customer";
-
-    if (!isMissingCustomerError) {
-      throw error;
-    }
-
-    if (!fallbackEmail) {
-      throw new Error(
-        "Stripe customer is invalid and no fallback email is available",
-      );
-    }
-
-    const createdCustomer = await stripe.customers.create({
-      email: fallbackEmail,
-      name: payout.merchant.user.name,
+    // 1. Transfer funds from your platform balance to the Merchant's Connected Account
+    const transfer = await stripe.transfers.create({
+      amount: amountInSmallestUnit,
+      currency: "usd", // NOTE: Ensure this matches your supported platform currency
+      destination: payout.paymentAccount.stripeConnectAccountId,
       metadata: {
+        payoutId: payout.id,
         merchantId: payout.merchantId,
-        paymentAccountId: payout.paymentAccountId,
       },
+      description: `Payout for ${payout.merchant.businessName}`,
     });
 
-    await prisma.paymentAccount.update({
-      where: {
-        id: payout.paymentAccountId,
-      },
+    // 2. Mark Payout as completed immediately (Synchronous execution)
+    const updatedPayout = await prisma.payout.update({
+      where: { id: payout.id },
       data: {
-        stripeCustomerId: createdCustomer.id,
-        billingEmail: payout.paymentAccount.billingEmail ?? fallbackEmail,
+        status: PayoutStatus.COMPLETED,
+        transactionId: transfer.id,
+        paymentGatewayData: transfer as unknown as Prisma.InputJsonValue,
       },
     });
 
-    checkoutSessionPayload.customer = createdCustomer.id;
-    delete checkoutSessionPayload.customer_email;
+    return {
+      payoutId: updatedPayout.id,
+      transferId: transfer.id,
+      status: updatedPayout.status,
+    };
+  } catch (error: any) {
+    console.error("Stripe Transfer Failed:", error);
 
-    checkoutSession = await stripe.checkout.sessions.create(
-      checkoutSessionPayload,
-    );
+    // If Stripe fails (e.g. insufficient platform funds), reject payout & refund the merchant's platform balance
+    await prisma.$transaction(async (tx) => {
+      await tx.payout.update({
+        where: { id: payoutId },
+        data: {
+          status: PayoutStatus.REJECTED,
+          adminNote: `Stripe Transfer Failed: ${error.message}`,
+        },
+      });
+
+      await tx.merchant.update({
+        where: { id: payout.merchantId },
+        data: { balance: { increment: payout.amount } },
+      });
+    });
+
+    throw new AppError(status.BAD_GATEWAY, `Transfer failed: ${error.message}`);
   }
-
-  await prisma.payout.update({
-    where: {
-      id: payout.id,
-    },
-    data: {
-      transactionId: checkoutSession.id,
-      paymentMethod: "STRIPE",
-      paymentGatewayData: checkoutSession as unknown as Prisma.InputJsonValue,
-    },
-  });
-
-  return {
-    payoutId: payout.id,
-    checkoutSessionId: checkoutSession.id,
-    checkoutUrl: checkoutSession.url,
-    status: payout.status,
-  };
 };
 
 export const payoutService = {
-  handleStripeWebhookEvent,
-  createStripeCheckoutSessionForPayout,
+  createPayoutRequest,
+  processStripePayout,
 };

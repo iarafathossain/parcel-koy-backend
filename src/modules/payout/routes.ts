@@ -3,16 +3,23 @@ import { Role } from "../../generated/prisma/enums";
 import { checkAuth } from "../../middlewares/check-auth";
 import { validateRequest } from "../../middlewares/validate-request";
 import { payoutController } from "./controllers";
-import { createStripeCheckoutSessionZodSchema } from "./validators";
+import { requestPayoutZodSchema } from "./validators";
 
 const router = Router();
 
-// POST: /api/v1/payouts/:payoutId/checkout-session - Create Stripe Checkout Session (Admin, Super Admin)
+// POST: /api/v1/payouts/request - Merchant requests a payout
 router.post(
-  "/:payoutId/checkout-session",
-  validateRequest(createStripeCheckoutSessionZodSchema),
+  "/request",
+  validateRequest(requestPayoutZodSchema),
+  checkAuth(Role.MERCHANT),
+  payoutController.requestPayout,
+);
+
+// POST: /api/v1/payouts/:payoutId/process
+router.post(
+  "/:payoutId/process",
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
-  payoutController.createStripeCheckoutSession,
+  payoutController.processPayout,
 );
 
 export const payoutRoutes = router;

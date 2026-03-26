@@ -3,10 +3,9 @@ model Payout {
     amount Decimal      @db.Decimal(10, 2)
     status PayoutStatus @default(PENDING)
 
-    transactionId      String? @db.VarChar(300)
-    stripeEventId      String? @db.VarChar(300)
+    // Simplified: We only need the Stripe Transfer ID and raw response
+    transactionId      String? @db.VarChar(300) // Will hold tr_...
     paymentGatewayData Json?
-    paymentMethod      String?
     adminNote          String? @db.Text
 
     // Relations
@@ -21,6 +20,5 @@ model Payout {
 
     @@index([merchantId], name: "idx_payout_merchant_id")
     @@index([status], name: "idx_payout_status")
-    @@index([createdAt], name: "idx_payout_created_at")
     @@map("payouts")
 }
