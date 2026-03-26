@@ -10,6 +10,7 @@ import { methodRoutes } from "../modules/method/routes";
 import { noteRoutes } from "../modules/note/routes";
 import { parcelRoutes } from "../modules/parcel/routes";
 import { paymentAccountRoutes } from "../modules/payment-account/routes";
+import { payoutRoutes } from "../modules/payout/routes";
 import { pricingRoutes } from "../modules/pricing/routes";
 import { riderRoutes } from "../modules/rider/routes";
 import { speedRoutes } from "../modules/speed/routes";
@@ -64,5 +65,8 @@ router.use("/cash-collections", cashCollectionRoutes);
 
 // using payment account routes
 router.use("/payment-accounts", paymentAccountRoutes);
+
+// using payout routes
+router.use("/payouts", payoutRoutes);
 
 export const indexRoutes = router;

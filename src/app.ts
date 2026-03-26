@@ -6,6 +6,7 @@ import qs from "qs";
 import { auth } from "./libs/auth";
 import { globalErrorHandler } from "./middlewares/global-error-handler";
 import { notFoundHandler } from "./middlewares/not-found";
+import { payoutController } from "./modules/payout/controllers";
 import { indexRoutes } from "./routes/index";
 
 const app: Application = express();
@@ -16,6 +17,13 @@ app.set("views", path.resolve(process.cwd(), `src/templates`));
 
 // Enable urlencoded body parsing
 app.use(express.urlencoded({ extended: true }));
+
+// Stripe webhook route
+app.post(
+  "/webhook",
+  express.raw({ type: "application/json" }),
+  payoutController.handleStripeWebhookEvent,
+);
 
 // Enable JSON body parsing
 app.use(express.json());
