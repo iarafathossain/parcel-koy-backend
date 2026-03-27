@@ -1,6 +1,6 @@
 import status from "http-status";
-import AppError from "../errors/app-error";
-import { prisma } from "../libs/prisma";
+import AppError from "../../errors/app-error";
+import { prisma } from "../../libs/prisma";
 
 // Utility function to be used inside your other controllers (Parcel, Payout, etc.)
 const sendNotification = async (

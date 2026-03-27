@@ -14,6 +14,7 @@ import { payoutRoutes } from "../modules/payout/routes";
 import { pricingRoutes } from "../modules/pricing/routes";
 import { riderRoutes } from "../modules/rider/routes";
 import { speedRoutes } from "../modules/speed/routes";
+import { statsRoute } from "../modules/stats/routes";
 import { userRoutes } from "../modules/user/routes";
 import { zoneRoutes } from "../modules/zone/routes";
 const router = Router();
@@ -68,5 +69,8 @@ router.use("/payment-accounts", paymentAccountRoutes);
 
 // using payout routes
 router.use("/payouts", payoutRoutes);
+
+// using stats routes
+router.use("/stats", statsRoute);
 
 export const indexRoutes = router;
