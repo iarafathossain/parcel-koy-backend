@@ -43,11 +43,7 @@ router.get(
 );
 
 // GET: api/v1/auth/refresh-tokens (get new access and refresh tokens)
-router.get(
-  "/refresh-tokens",
-  checkAuth(Role.ADMIN, Role.MERCHANT, Role.RIDER, Role.SUPER_ADMIN),
-  authControllers.getNewTokens,
-);
+router.get("/refresh-tokens", authControllers.getNewTokens);
 
 // POST: api/v1/auth/logout (logout a user)
 router.post(

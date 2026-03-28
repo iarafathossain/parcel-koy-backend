@@ -135,6 +135,7 @@ const registerMerchant = async (payload: RegisterMerchantZodSchema) => {
           status: user.status,
           isDeleted: user.isDeleted,
           emailVerified: user.emailVerified,
+          needPasswordChange: user.needPasswordChange,
         })
       : null;
 
@@ -147,6 +148,7 @@ const registerMerchant = async (payload: RegisterMerchantZodSchema) => {
           status: user.status,
           isDeleted: user.isDeleted,
           emailVerified: user.emailVerified,
+          needPasswordChange: user.needPasswordChange,
         })
       : null;
 
@@ -200,6 +202,7 @@ const verifyEmail = async (payload: VerifyEmailZodSchema) => {
         status: result.user.status,
         isDeleted: result.user.isDeleted,
         emailVerified: result.user.emailVerified,
+        needPasswordChange: result.user.needPasswordChange,
       })
     : null;
 
@@ -212,6 +215,7 @@ const verifyEmail = async (payload: VerifyEmailZodSchema) => {
         status: result.user.status,
         isDeleted: result.user.isDeleted,
         emailVerified: result.user.emailVerified,
+        needPasswordChange: result.user.needPasswordChange,
       })
     : null;
 
@@ -279,6 +283,7 @@ const loginUser = async (payload: LoginUserZodSchema) => {
     status: user.status,
     isDeleted: user.isDeleted,
     emailVerified: user.emailVerified,
+    needPasswordChange: user.needPasswordChange,
   });
 
   const refreshToken = tokenUtils.getRefreshToken({
@@ -289,6 +294,7 @@ const loginUser = async (payload: LoginUserZodSchema) => {
     status: user.status,
     isDeleted: user.isDeleted,
     emailVerified: user.emailVerified,
+    needPasswordChange: user.needPasswordChange,
   });
 
   return { user, accessToken, refreshToken, sessionToken };
@@ -358,6 +364,7 @@ const getNewTokens = async (refreshToken: string, sessionToken: string) => {
     status: verifiedUser.status,
     isDeleted: verifiedUser.isDeleted,
     emailVerified: verifiedUser.emailVerified,
+    needPasswordChange: existingSessiontoken.user.needPasswordChange,
   });
 
   const newRefreshToken = tokenUtils.getRefreshToken({
@@ -368,6 +375,7 @@ const getNewTokens = async (refreshToken: string, sessionToken: string) => {
     status: verifiedUser.status,
     isDeleted: verifiedUser.isDeleted,
     emailVerified: verifiedUser.emailVerified,
+    needPasswordChange: existingSessiontoken.user.needPasswordChange,
   });
 
   // update the session with the new expiry time
@@ -441,6 +449,7 @@ const changePassword = async (
     status: existingSessionToken.user.status,
     isDeleted: existingSessionToken.user.isDeleted,
     emailVerified: existingSessionToken.user.emailVerified,
+    needPasswordChange: existingSessionToken.user.needPasswordChange,
   });
 
   const newRefreshToken = tokenUtils.getRefreshToken({
@@ -451,6 +460,7 @@ const changePassword = async (
     status: existingSessionToken.user.status,
     isDeleted: existingSessionToken.user.isDeleted,
     emailVerified: existingSessionToken.user.emailVerified,
+    needPasswordChange: existingSessionToken.user.needPasswordChange,
   });
 
   return {
