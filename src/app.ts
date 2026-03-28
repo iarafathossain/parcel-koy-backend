@@ -1,8 +1,10 @@
 import { toNodeHandler } from "better-auth/node";
 import cookieParser from "cookie-parser";
+import cors from "cors";
 import express, { Application } from "express";
 import path from "path";
 import qs from "qs";
+import { envVariables } from "./config/env";
 import { startNotificationCleanupJob } from "./jobs/notification-cleanup";
 import { auth } from "./libs/auth";
 import { globalErrorHandler } from "./middlewares/global-error-handler";
@@ -11,6 +13,17 @@ import { webhookControllers } from "./modules/webhook/controller";
 import { indexRoutes } from "./routes/index";
 
 const app: Application = express();
+
+// Configure CORS middleware
+app.use(
+  cors({
+    origin: [envVariables.FRONTEND_URL],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
+    exposedHeaders: ["Content-Type", "Authorization", "Cookie", "Set-Cookie"],
+  }),
+);
 
 // 1. WEBHOOK ROUTE GOES FIRST!
 // Use express.raw() so req.body remains a Buffer for signature verification

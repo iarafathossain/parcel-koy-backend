@@ -6,6 +6,36 @@ import { getSlug } from "../../utils/get-slug";
 import { QueryBuilder } from "../../utils/query-builder";
 import { CreateAreaPayload, UpdateAreaPayload } from "./validators";
 
+const normalizeAreaIncludeParam = (queryParams: IQueryParams): IQueryParams => {
+  const includeParam = queryParams.include;
+
+  if (!includeParam) {
+    return queryParams;
+  }
+
+  const normalizedInclude = includeParam
+    .split(",")
+    .map((item) => item.trim())
+    .flatMap((item) => {
+      switch (item) {
+        case "hubs":
+          return ["hub"];
+        case "parcels":
+          return ["originParcels", "destinationParcels"];
+        default:
+          return [item];
+      }
+    })
+    .filter(Boolean)
+    .filter((value, index, arr) => arr.indexOf(value) === index)
+    .join(",");
+
+  return {
+    ...queryParams,
+    include: normalizedInclude,
+  };
+};
+
 const createArea = async (payload: CreateAreaPayload) => {
   const slug = getSlug(payload.name);
 
@@ -37,22 +67,24 @@ const createArea = async (payload: CreateAreaPayload) => {
 };
 
 const getAllAreas = async (queryParams: IQueryParams) => {
-  const queryBuilder = new QueryBuilder(prisma.area, queryParams, {
+  const normalizedQueryParams = normalizeAreaIncludeParam(queryParams);
+
+  const queryBuilder = new QueryBuilder(prisma.area, normalizedQueryParams, {
     searchableFields: [
       "name",
       "slug",
       "zone.name",
       "zone.slug",
-      "hubs.name",
-      "hubs.slug",
+      "hub.name",
+      "hub.slug",
     ],
     filterableFields: [
       "name",
       "slug",
       "zoneId",
       "zone.slug",
-      "hubs.id",
-      "hubs.slug",
+      "hub.id",
+      "hub.slug",
     ],
   })
     .search()
@@ -62,10 +94,12 @@ const getAllAreas = async (queryParams: IQueryParams) => {
     .dynamicInclude(
       {
         zone: true,
-        hubs: true,
-        parcels: true,
+        hub: true,
+        originParcels: true,
+        destinationParcels: true,
+        merchants: true,
       },
-      ["zone", "hubs"],
+      ["zone", "hub"],
     )
     .paginate();
 
@@ -73,16 +107,20 @@ const getAllAreas = async (queryParams: IQueryParams) => {
 };
 
 const getAreaBySlug = async (slug: string, queryParams: IQueryParams) => {
-  const queryBuilder = new QueryBuilder(prisma.area, queryParams)
+  const normalizedQueryParams = normalizeAreaIncludeParam(queryParams);
+
+  const queryBuilder = new QueryBuilder(prisma.area, normalizedQueryParams)
     .where({ slug })
     .fields()
     .dynamicInclude(
       {
         zone: true,
-        hubs: true,
-        parcels: true,
+        hub: true,
+        originParcels: true,
+        destinationParcels: true,
+        merchants: true,
       },
-      ["zone", "hubs"],
+      ["zone", "hub"],
     );
 
   const areas = await prisma.area.findMany(

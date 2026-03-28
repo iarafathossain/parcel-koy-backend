@@ -1,4 +1,6 @@
-webhook configuration:
+1. if payload min weight is less then base weight then set the base weight as min weight in pricing
+
+2. webhook configuration:
 
 When you are ready to deploy your backend to Render, here is exactly how you configure Stripe:
 

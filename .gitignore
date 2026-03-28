@@ -6,3 +6,6 @@ dist
 /src/generated/prisma
 .venv
 arafat-response.json
+.vscode
+frontend
+todo
