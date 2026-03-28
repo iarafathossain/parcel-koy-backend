@@ -192,7 +192,7 @@ const getAllAdmins = async (queryParams: IQueryParams) => {
       "user.name",
       "user.email",
       "user.contactNumber",
-      "user.role",
+      "managedHubs.name",
     ],
     filterableFields: [
       "user.email",
@@ -200,7 +200,11 @@ const getAllAdmins = async (queryParams: IQueryParams) => {
       "user.gender",
       "user.isDeleted",
       "user.role",
+      "managedHubs.id",
+      "managedHubs.name",
+      "managedHubs.slug",
     ],
+    arrayRelations: ["managedHubs"],
   })
     .search()
     .filter()
