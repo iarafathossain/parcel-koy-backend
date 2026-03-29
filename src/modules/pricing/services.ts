@@ -9,14 +9,6 @@ import {
 } from "./validators";
 
 const createPricing = async (payload: CreatePricingRulePayload) => {
-  // Validate that min weight is less than max weight
-  if (payload.minWeight >= payload.maxWeight) {
-    throw new AppError(
-      status.BAD_REQUEST,
-      "Min weight must be less than max weight",
-    );
-  }
-
   // Validate that zones exist
   const originalZone = await prisma.zone.findUnique({
     where: { id: payload.originalZoneId },
@@ -103,19 +95,25 @@ const createPricing = async (payload: CreatePricingRulePayload) => {
     throw new AppError(status.NOT_FOUND, "Category not found");
   }
 
+  // Use category base weight when provided minWeight is lower.
+  const minWeight =
+    payload.minWeight < category.baseWeight
+      ? category.baseWeight
+      : payload.minWeight;
+
+  // Validate that effective min weight is less than max weight
+  if (minWeight >= payload.maxWeight) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      "Min weight must be less than max weight",
+    );
+  }
+
   // ensure price is >= category base fee
   if (payload.price < Number(category.baseFee)) {
     throw new AppError(
       status.BAD_REQUEST,
       `Price must be greater than or equal to category[${category.slug}] base fee of ${category.baseFee}`,
-    );
-  }
-
-  // ensure minWeight is >= category base weight
-  if (payload.minWeight < category.baseWeight) {
-    throw new AppError(
-      status.BAD_REQUEST,
-      `Min weight must be greater than or equal to category[${category.slug}] base weight of ${category.baseWeight}`,
     );
   }
 
@@ -154,7 +152,7 @@ const createPricing = async (payload: CreatePricingRulePayload) => {
       speedId: payload.speedId,
       pickupMethodId: payload.pickupMethodId,
       deliveryMethodId: payload.deliveryMethodId,
-      minWeight: payload.minWeight,
+      minWeight: minWeight,
       maxWeight: payload.maxWeight,
       price: payload.price,
       isActive: payload.isActive ?? true,

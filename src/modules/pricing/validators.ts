@@ -10,7 +10,7 @@ export const createPricingZodSchema = zod
     deliveryMethodId: zod.uuid("Delivery method ID must be a valid UUID"),
     minWeight: zod
       .number("Min weight must be a number")
-      .positive("Min weight must be greater than 0"),
+      .min(0, "Min weight must be greater than or equal to 0"),
     maxWeight: zod
       .number("Max weight must be a number")
       .positive("Max weight must be greater than 0"),
@@ -47,7 +47,7 @@ export const updatePricingZodSchema = zod
       .optional(),
     minWeight: zod
       .number("Min weight must be a number")
-      .positive("Min weight must be greater than 0")
+      .min(0, "Min weight must be greater than or equal to 0")
       .optional(),
     maxWeight: zod
       .number("Max weight must be a number")

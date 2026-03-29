@@ -138,12 +138,11 @@ const createParcel = async (payload: CreateParcelPayload, userId: string) => {
     throw new AppError(status.BAD_REQUEST, "Invalid category selected");
   }
 
-  if (payload.declaredWeight < baseCategoryWeight.baseWeight) {
-    throw new AppError(
-      status.BAD_REQUEST,
-      `Declared weight must be at least ${baseCategoryWeight.baseWeight} kg for category ${baseCategoryWeight.slug}`,
-    );
-  }
+  // Use the category base weight for pricing when declared weight is lower.
+  const minWeight =
+    payload.declaredWeight < baseCategoryWeight.baseWeight
+      ? baseCategoryWeight.baseWeight
+      : payload.declaredWeight;
 
   const deliveryCharge = await prisma.pricing.findFirst({
     where: {
@@ -153,8 +152,8 @@ const createParcel = async (payload: CreateParcelPayload, userId: string) => {
       pickupMethodId: pickupMethod.id,
       deliveryMethodId: deliveryMethod.id,
       categoryId: payload.categoryId,
-      minWeight: { lte: payload.declaredWeight },
-      maxWeight: { gte: payload.declaredWeight },
+      minWeight: { lte: minWeight },
+      maxWeight: { gte: minWeight },
     },
     select: { price: true },
   });
