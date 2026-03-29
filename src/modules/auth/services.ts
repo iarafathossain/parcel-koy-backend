@@ -308,8 +308,13 @@ const getMe = async (user: IRequestUser) => {
     include: {
       merchantProfile: {
         include: {
-          parcels: true,
-          originArea: true,
+          originArea: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
+          },
         },
       },
 
