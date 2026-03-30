@@ -499,13 +499,8 @@ const getDeliveryCharge = async (payload: GetDeliveryChargePayload) => {
       },
       isActive: true,
     },
-    include: {
-      originalZone: true,
-      destinationZone: true,
-      category: true,
-      speed: true,
-      pickupMethod: true,
-      deliveryMethod: true,
+    select: {
+      price: true,
     },
   });
 
