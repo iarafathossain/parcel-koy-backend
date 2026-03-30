@@ -1,13 +1,10 @@
 import status from "http-status";
 import AppError from "../../errors/app-error";
-import { UserStatus } from "../../generated/prisma/enums";
 import { IRequestUser } from "../../interfaces/auth-type";
 import { IQueryParams } from "../../interfaces/query-type";
 import { prisma } from "../../libs/prisma";
 import { QueryBuilder } from "../../utils/query-builder";
 import {
-  ActivateUserPayload,
-  BlockUserPayload,
   DeleteUserPayload,
   GetSingleAdminByEmailPayload,
   UpdateAdminProfilePayload,
@@ -288,78 +285,6 @@ const deleteAdminById = async (adminId: string) => {
   });
 };
 
-const activateUser = async (
-  payload: ActivateUserPayload,
-  currentUser: IRequestUser,
-) => {
-  const targetUser = await prisma.user.findUnique({
-    where: {
-      id: payload.userId,
-    },
-  });
-
-  if (!targetUser) {
-    throw new AppError(status.NOT_FOUND, "User not found");
-  }
-
-  // Admin cannot activate super-admin
-  if (currentUser.role === "ADMIN" && targetUser.role === "SUPER_ADMIN") {
-    throw new AppError(status.FORBIDDEN, "Admin cannot activate super-admin");
-  }
-
-  // Admin can activate merchant and rider, but not other admins except super-admin is allowed for super-admin only
-  if (currentUser.role === "ADMIN" && targetUser.role === "ADMIN") {
-    throw new AppError(status.FORBIDDEN, "Admin cannot activate another admin");
-  }
-
-  const updatedUser = await prisma.user.update({
-    where: {
-      id: payload.userId,
-    },
-    data: {
-      status: "ACTIVE" as UserStatus,
-    },
-  });
-
-  return updatedUser;
-};
-
-const blockUser = async (
-  payload: BlockUserPayload,
-  currentUser: IRequestUser,
-) => {
-  const targetUser = await prisma.user.findUnique({
-    where: {
-      id: payload.userId,
-    },
-  });
-
-  if (!targetUser) {
-    throw new AppError(status.NOT_FOUND, "User not found");
-  }
-
-  // Admin cannot block super-admin
-  if (currentUser.role === "ADMIN" && targetUser.role === "SUPER_ADMIN") {
-    throw new AppError(status.FORBIDDEN, "Admin cannot block super-admin");
-  }
-
-  // Admin can block merchant and rider, but not other admins
-  if (currentUser.role === "ADMIN" && targetUser.role === "ADMIN") {
-    throw new AppError(status.FORBIDDEN, "Admin cannot block another admin");
-  }
-
-  const updatedUser = await prisma.user.update({
-    where: {
-      id: payload.userId,
-    },
-    data: {
-      status: "BLOCKED" as UserStatus,
-    },
-  });
-
-  return updatedUser;
-};
-
 const deleteUser = async (
   payload: DeleteUserPayload,
   currentUser: IRequestUser,
@@ -421,7 +346,5 @@ export const adminServices = {
   getSingleAdminById,
   getSingleAdminByEmail,
   deleteAdminById,
-  activateUser,
-  blockUser,
   deleteUser,
 };

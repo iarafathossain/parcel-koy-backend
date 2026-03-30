@@ -4,11 +4,9 @@ import { checkAuth } from "../../middlewares/check-auth";
 import { validateRequest } from "../../middlewares/validate-request";
 import { adminControllers } from "./controllers";
 import {
-  activateUserZodSchema,
-  blockUserZodSchema,
-  deleteUserZodSchema,
-  getSingleAdminByEmailZodSchema,
-  updateAdminProfileZodSchema,
+    deleteUserZodSchema,
+    getSingleAdminByEmailZodSchema,
+    updateAdminProfileZodSchema,
 } from "./validators";
 
 const router = Router();
@@ -50,25 +48,9 @@ router.delete(
   adminControllers.deleteAdminById,
 );
 
-// POST: /api/v1/admins/activate - Activate user (Admin, Super Admin)
-router.post(
-  "/users/activate",
-  validateRequest(activateUserZodSchema),
-  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
-  adminControllers.activateUser,
-);
-
-// POST: /api/v1/admins/block - Block user (Admin, Super Admin)
-router.post(
-  "/users/block",
-  validateRequest(blockUserZodSchema),
-  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
-  adminControllers.blockUser,
-);
-
 // POST: /api/v1/admins/delete - Delete user (Admin, Super Admin)
 router.post(
-  "/users/delete",
+  "/delete",
   validateRequest(deleteUserZodSchema),
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   adminControllers.deleteUser,

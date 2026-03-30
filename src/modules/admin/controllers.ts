@@ -124,46 +124,6 @@ const deleteAdminById = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const activateUser = catchAsync(async (req: Request, res: Response) => {
-  const user = req.user;
-
-  if (!user) {
-    throw new AppError(
-      status.UNAUTHORIZED,
-      "Unauthorized Access! User not found in request",
-    );
-  }
-
-  const result = await adminServices.activateUser(req.body, user);
-
-  sendResponse(res, {
-    httpStatusCode: status.OK,
-    success: true,
-    message: "User activated successfully",
-    data: result,
-  });
-});
-
-const blockUser = catchAsync(async (req: Request, res: Response) => {
-  const user = req.user;
-
-  if (!user) {
-    throw new AppError(
-      status.UNAUTHORIZED,
-      "Unauthorized Access! User not found in request",
-    );
-  }
-
-  const result = await adminServices.blockUser(req.body, user);
-
-  sendResponse(res, {
-    httpStatusCode: status.OK,
-    success: true,
-    message: "User blocked successfully",
-    data: result,
-  });
-});
-
 const deleteUser = catchAsync(async (req: Request, res: Response) => {
   const user = req.user;
 
@@ -190,7 +150,5 @@ export const adminControllers = {
   getSingleAdminById,
   getSingleAdminByEmail,
   deleteAdminById,
-  activateUser,
-  blockUser,
   deleteUser,
 };

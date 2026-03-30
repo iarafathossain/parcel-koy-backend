@@ -38,14 +38,6 @@ export const getSingleAdminByEmailZodSchema = zod.object({
   email: zod.email("Invalid email address"),
 });
 
-export const activateUserZodSchema = zod.object({
-  userId: zod.uuid("User ID must be a valid UUID"),
-});
-
-export const blockUserZodSchema = zod.object({
-  userId: zod.uuid("User ID must be a valid UUID"),
-});
-
 export const deleteUserZodSchema = zod.object({
   userId: zod.uuid("User ID must be a valid UUID"),
 });
@@ -56,6 +48,4 @@ export type UpdateAdminProfilePayload = zod.infer<
 export type GetSingleAdminByEmailPayload = zod.infer<
   typeof getSingleAdminByEmailZodSchema
 >;
-export type ActivateUserPayload = zod.infer<typeof activateUserZodSchema>;
-export type BlockUserPayload = zod.infer<typeof blockUserZodSchema>;
 export type DeleteUserPayload = zod.infer<typeof deleteUserZodSchema>;

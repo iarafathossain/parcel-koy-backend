@@ -203,6 +203,46 @@ const resetPassword = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const activateUser = catchAsync(async (req: Request, res: Response) => {
+  const user = req.user;
+
+  if (!user) {
+    throw new AppError(
+      status.UNAUTHORIZED,
+      "Unauthorized Access! User not found in request",
+    );
+  }
+
+  const result = await authServices.activateUser(req.body, user);
+
+  sendResponse(res, {
+    httpStatusCode: status.OK,
+    success: true,
+    message: "User activated successfully",
+    data: result,
+  });
+});
+
+const blockUser = catchAsync(async (req: Request, res: Response) => {
+  const user = req.user;
+
+  if (!user) {
+    throw new AppError(
+      status.UNAUTHORIZED,
+      "Unauthorized Access! User not found in request",
+    );
+  }
+
+  const result = await authServices.blockUser(req.body, user);
+
+  sendResponse(res, {
+    httpStatusCode: status.OK,
+    success: true,
+    message: "User blocked successfully",
+    data: result,
+  });
+});
+
 export const authControllers = {
   registerMerchant,
   verifyEmail,
@@ -213,4 +253,6 @@ export const authControllers = {
   changePassword,
   forgetPassword,
   resetPassword,
+  activateUser,
+  blockUser,
 };

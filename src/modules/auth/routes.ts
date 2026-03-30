@@ -4,6 +4,8 @@ import { checkAuth } from "../../middlewares/check-auth";
 import { validateRequest } from "../../middlewares/validate-request";
 import { authControllers } from "./controllers";
 import {
+  activateUserZodSchema,
+  blockUserZodSchema,
   changePasswordZodSchema,
   forgotPasswordZodSchema,
   loginUserZodSchema,
@@ -72,6 +74,22 @@ router.post(
   "/reset-password",
   validateRequest(resetPasswordZodSchema),
   authControllers.resetPassword,
+);
+
+// POST: /api/v1/auth/activate - Activate user (Admin, Super Admin)
+router.post(
+  "/activate",
+  validateRequest(activateUserZodSchema),
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  authControllers.activateUser,
+);
+
+// POST: /api/v1/auth/block - Block user (Admin, Super Admin)
+router.post(
+  "/block",
+  validateRequest(blockUserZodSchema),
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  authControllers.blockUser,
 );
 
 export const authRoutes = router;

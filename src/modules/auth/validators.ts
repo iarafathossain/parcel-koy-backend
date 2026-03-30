@@ -104,3 +104,15 @@ export const resetPasswordZodSchema = zod.object({
 });
 
 export type ResetPasswordZodSchema = zod.infer<typeof resetPasswordZodSchema>;
+
+export const activateUserZodSchema = zod.object({
+  userId: zod.uuid("User ID must be a valid UUID"),
+});
+
+export type ActivateUserPayload = zod.infer<typeof activateUserZodSchema>;
+
+export const blockUserZodSchema = zod.object({
+  userId: zod.uuid("User ID must be a valid UUID"),
+});
+
+export type BlockUserPayload = zod.infer<typeof blockUserZodSchema>;
