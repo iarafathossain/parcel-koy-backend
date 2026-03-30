@@ -1,6 +1,6 @@
 import express from "express";
-import { Role } from "../generated/prisma/enums";
-import { checkAuth } from "../middlewares/check-auth";
+import { Role } from "../../generated/prisma/enums";
+import { checkAuth } from "../../middlewares/check-auth";
 import { notificationControllers } from "./controllers";
 const router = express.Router();
 

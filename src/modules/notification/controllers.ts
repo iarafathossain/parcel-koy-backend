@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import status from "http-status";
-import AppError from "../errors/app-error";
-import { catchAsync } from "../shared/catch-async";
-import { sendResponse } from "../shared/send-response";
+import AppError from "../../errors/app-error";
+import { catchAsync } from "../../shared/catch-async";
+import { sendResponse } from "../../shared/send-response";
 import { notificationServices } from "./services";
 
 const getMyNotifications = catchAsync(async (req: Request, res: Response) => {
