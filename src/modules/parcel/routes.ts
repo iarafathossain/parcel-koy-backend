@@ -14,6 +14,13 @@ import {
 
 const router = Router();
 
+// GET: /api/v1/parcels/ - Get all parcels (Admin, Super Admin)
+router.get(
+  "/",
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  parcelControllers.getAllParcels,
+);
+
 // POST: /api/v1/parcels/ - Create a new parcel (Merchant only)
 router.post(
   "/",

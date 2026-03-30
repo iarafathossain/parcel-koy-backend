@@ -1,9 +1,24 @@
 import { Request, Response } from "express";
 import status from "http-status";
 import AppError from "../../errors/app-error";
+import { IQueryParams } from "../../interfaces/query-type";
 import { catchAsync } from "../../shared/catch-async";
 import { sendResponse } from "../../shared/send-response";
 import { parcelServices } from "./services";
+
+const getAllParcels = catchAsync(async (req: Request, res: Response) => {
+  const queryParams = req.query as IQueryParams;
+
+  const result = await parcelServices.getAllParcels(queryParams);
+
+  sendResponse(res, {
+    httpStatusCode: status.OK,
+    success: true,
+    message: "Parcels retrieved successfully",
+    data: result?.data ?? [],
+    meta: result?.meta,
+  });
+});
 
 const createParcel = catchAsync(async (req: Request, res: Response) => {
   const payload = req.body;
@@ -224,6 +239,7 @@ const getParcelHubTracking = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const parcelControllers = {
+  getAllParcels,
   createParcel,
   updateParcel,
   updateParcelStatusByAdmin,

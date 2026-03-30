@@ -2,8 +2,10 @@ import status from "http-status";
 import { envVariables } from "../../config/env";
 import AppError from "../../errors/app-error";
 import { ParcelStatus } from "../../generated/prisma/enums";
+import { IQueryParams } from "../../interfaces/query-type";
 import { prisma } from "../../libs/prisma";
 import { generateTrackingID } from "../../utils/generate-tracking-id";
+import { QueryBuilder } from "../../utils/query-builder";
 import { parseDurationToMs } from "../../utils/token";
 import { notificationServices } from "../notification/services";
 import {
@@ -45,6 +47,146 @@ const resolveHubIdForStatus = (
   }
 
   return undefined;
+};
+
+const getAllParcels = async (queryParams: IQueryParams) => {
+  const queryBuilder = new QueryBuilder(prisma.parcel, queryParams, {
+    searchableFields: [
+      "trackingId",
+      "pickupAddress",
+      "deliveryAddress",
+      "receiverName",
+      "receiverContactNumber",
+      "merchant.businessName",
+      "category.name",
+      "originArea.name",
+      "destinationArea.name",
+      "originHub.name",
+      "destinationHub.name",
+    ],
+    filterableFields: [
+      "trackingId",
+      "status",
+      "merchantId",
+      "categoryId",
+      "originAreaId",
+      "destinationAreaId",
+      "originHubId",
+      "destinationHubId",
+      "pickupRiderId",
+      "deliveryRiderId",
+      "speedId",
+      "pickupMethodId",
+      "deliveryMethodId",
+      "isFragile",
+    ],
+  })
+    .search()
+    .filter()
+    .sort()
+    .fields()
+    .dynamicInclude(
+      {
+        merchant: {
+          select: {
+            id: true,
+            businessName: true,
+            user: {
+              select: {
+                name: true,
+                contactNumber: true,
+              },
+            },
+          },
+        },
+        category: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        destinationArea: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        originArea: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        speed: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        pickupMethod: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        deliveryMethod: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        pickupRider: {
+          select: {
+            id: true,
+            user: {
+              select: {
+                name: true,
+                contactNumber: true,
+              },
+            },
+          },
+        },
+        deliveryRider: {
+          select: {
+            id: true,
+            user: {
+              select: {
+                name: true,
+                contactNumber: true,
+              },
+            },
+          },
+        },
+        originHub: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        destinationHub: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+      [
+        "merchant",
+        "category",
+        "destinationArea",
+        "originArea",
+        "speed",
+        "pickupMethod",
+        "deliveryMethod",
+        "pickupRider",
+        "deliveryRider",
+        "originHub",
+        "destinationHub",
+      ],
+    )
+    .paginate();
+
+  return await queryBuilder.execute();
 };
 
 const createParcel = async (payload: CreateParcelPayload, userId: string) => {
@@ -995,6 +1137,7 @@ const getParcelHubTracking = async (trackingId: string) => {
 };
 
 export const parcelServices = {
+  getAllParcels,
   createParcel,
   updateParcel,
   updateParcelStatusByAdmin,
