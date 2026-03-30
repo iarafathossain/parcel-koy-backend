@@ -23,7 +23,7 @@ router.post(
 router.get("/", pricingControllers.getAllPricing);
 
 // POST: /api/v1/pricing/delivery-charge - Calculate delivery charge (Public)
-router.get(
+router.post(
   "/delivery-charge",
   validateRequest(getDeliveryChargeZodSchema),
   pricingControllers.getDeliveryCharge,
