@@ -3,7 +3,11 @@ import { Role } from "../../generated/prisma/enums";
 import { checkAuth } from "../../middlewares/check-auth";
 import { validateRequest } from "../../middlewares/validate-request";
 import { pricingControllers } from "./controllers";
-import { createPricingZodSchema, updatePricingZodSchema } from "./validators";
+import {
+  createPricingZodSchema,
+  getDeliveryChargeZodSchema,
+  updatePricingZodSchema,
+} from "./validators";
 
 const router = Router();
 
@@ -17,6 +21,13 @@ router.post(
 
 // GET: /api/v1/pricing/ - Get all pricing rules (Public)
 router.get("/", pricingControllers.getAllPricing);
+
+// POST: /api/v1/pricing/delivery-charge - Calculate delivery charge (Public)
+router.get(
+  "/delivery-charge",
+  validateRequest(getDeliveryChargeZodSchema),
+  pricingControllers.getDeliveryCharge,
+);
 
 // GET: /api/v1/pricing/:id - Get pricing rule by ID (Public)
 router.get("/:id", pricingControllers.getPricingById);

@@ -116,10 +116,24 @@ const deletePricing = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getDeliveryCharge = catchAsync(async (req: Request, res: Response) => {
+  const payload = req.body;
+
+  const result = await pricingServices.getDeliveryCharge(payload);
+
+  sendResponse(res, {
+    httpStatusCode: status.OK,
+    success: true,
+    message: "Delivery charge calculated successfully",
+    data: result,
+  });
+});
+
 export const pricingControllers = {
   createPricing,
   getAllPricing,
   getPricingById,
   updatePricing,
   deletePricing,
+  getDeliveryCharge,
 };

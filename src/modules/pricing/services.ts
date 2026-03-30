@@ -5,6 +5,7 @@ import { prisma } from "../../libs/prisma";
 import { QueryBuilder } from "../../utils/query-builder";
 import {
   CreatePricingRulePayload,
+  GetDeliveryChargePayload,
   UpdatePricingRulePayload,
 } from "./validators";
 
@@ -421,10 +422,108 @@ const deletePricing = async (id: string) => {
   return pricingRule;
 };
 
+const getDeliveryCharge = async (payload: GetDeliveryChargePayload) => {
+  // Validate that all required entities exist in parallel
+  const [
+    originalArea,
+    destinationArea,
+    category,
+    speed,
+    pickupMethod,
+    deliveryMethod,
+  ] = await Promise.all([
+    prisma.area.findUnique({
+      where: { id: payload.originAreaId },
+      select: { id: true, zoneId: true },
+    }),
+    prisma.area.findUnique({
+      where: { id: payload.destinationAreaId },
+      select: { id: true, zoneId: true },
+    }),
+    prisma.category.findUnique({
+      where: { id: payload.categoryId },
+      select: { id: true },
+    }),
+    prisma.speed.findUnique({
+      where: { id: payload.speedId },
+      select: { id: true },
+    }),
+    prisma.method.findUnique({
+      where: { id: payload.pickupMethodId },
+      select: { id: true },
+    }),
+    prisma.method.findUnique({
+      where: { id: payload.deliveryMethodId },
+      select: { id: true },
+    }),
+  ]);
+
+  if (!originalArea) {
+    throw new AppError(status.NOT_FOUND, "Original area not found");
+  }
+
+  if (!destinationArea) {
+    throw new AppError(status.NOT_FOUND, "Destination area not found");
+  }
+
+  if (!category) {
+    throw new AppError(status.NOT_FOUND, "Category not found");
+  }
+
+  if (!speed) {
+    throw new AppError(status.NOT_FOUND, "Speed type not found");
+  }
+
+  if (!pickupMethod) {
+    throw new AppError(status.NOT_FOUND, "Pickup method not found");
+  }
+
+  if (!deliveryMethod) {
+    throw new AppError(status.NOT_FOUND, "Delivery method not found");
+  }
+
+  // Find pricing rule that matches the criteria and weight range
+  const pricingRule = await prisma.pricing.findFirst({
+    where: {
+      originalZoneId: originalArea.zoneId,
+      destinationZoneId: destinationArea.zoneId,
+      categoryId: payload.categoryId,
+      speedId: payload.speedId,
+      pickupMethodId: payload.pickupMethodId,
+      deliveryMethodId: payload.deliveryMethodId,
+      minWeight: {
+        lte: payload.weight,
+      },
+      maxWeight: {
+        gte: payload.weight,
+      },
+      isActive: true,
+    },
+    include: {
+      originalZone: true,
+      destinationZone: true,
+      category: true,
+      speed: true,
+      pickupMethod: true,
+      deliveryMethod: true,
+    },
+  });
+
+  if (!pricingRule) {
+    throw new AppError(
+      status.NOT_FOUND,
+      "No active pricing rule found for the given delivery parameters and weight",
+    );
+  }
+
+  return pricingRule;
+};
+
 export const pricingServices = {
   createPricing,
   getAllPricing,
   getPricingById,
   updatePricing,
   deletePricing,
+  getDeliveryCharge,
 };
