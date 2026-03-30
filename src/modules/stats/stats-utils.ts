@@ -26,6 +26,21 @@ const mergeWhere = (
 
 const formatDate = (date: Date): string => date.toISOString().slice(0, 10);
 
+const safeCountIfTableMissing = async (query: Promise<number>) => {
+  try {
+    return await query;
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2021"
+    ) {
+      return 0;
+    }
+
+    throw error;
+  }
+};
+
 const getStatusCountTemplate = (): Record<ParcelStatus, number> => {
   const template = {} as Record<ParcelStatus, number>;
 
@@ -75,7 +90,7 @@ const getTotalCount = async () => {
     prisma.parcel.count(),
     prisma.trackingLog.count(),
     prisma.note.count(),
-    prisma.notification.count(),
+    safeCountIfTableMissing(prisma.notification.count()),
     prisma.cashCollection.count(),
     prisma.paymentAccount.count(),
     prisma.payout.count(),
