@@ -641,6 +641,17 @@ const updateParcelStatusByAdmin = async (
       data,
     });
 
+    if (payload.status === "DELIVERED") {
+      await tx.merchant.update({
+        where: { id: parcel.merchantId },
+        data: {
+          balance: {
+            increment: parcel.codAmount,
+          },
+        },
+      });
+    }
+
     await tx.trackingLog.create({
       data: {
         parcelId: parcelId,
