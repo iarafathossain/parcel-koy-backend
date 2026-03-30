@@ -1,9 +1,24 @@
 import { Request, Response } from "express";
 import status from "http-status";
 import AppError from "../../errors/app-error";
+import { IQueryParams } from "../../interfaces/query-type";
 import { catchAsync } from "../../shared/catch-async";
 import { sendResponse } from "../../shared/send-response";
 import { payoutService } from "./services";
+
+const getAllPendingPayout = catchAsync(async (req: Request, res: Response) => {
+  const queryParams = req.query as IQueryParams;
+
+  const result = await payoutService.getAllPendingPayout(queryParams);
+
+  sendResponse(res, {
+    httpStatusCode: status.OK,
+    success: true,
+    message: "Pending payouts retrieved successfully",
+    data: result?.data ?? [],
+    meta: result?.meta,
+  });
+});
 
 const requestPayout = catchAsync(async (req: Request, res: Response) => {
   const user = req.user;
@@ -39,4 +54,8 @@ const processPayout = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-export const payoutController = { requestPayout, processPayout };
+export const payoutController = {
+  getAllPendingPayout,
+  requestPayout,
+  processPayout,
+};

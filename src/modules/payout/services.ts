@@ -5,11 +5,49 @@ import AppError from "../../errors/app-error";
 import { Prisma } from "../../generated/prisma/client";
 import { PayoutStatus } from "../../generated/prisma/enums";
 import { IRequestUser } from "../../interfaces/auth-type";
+import { IQueryParams } from "../../interfaces/query-type";
 import { prisma } from "../../libs/prisma";
+import { QueryBuilder } from "../../utils/query-builder";
 import { notificationServices } from "../notification/services";
 import { RequestPayoutPayload } from "./validators";
 
 const stripe = new Stripe(envVariables.STRIPE.STRIPE_SECRET_KEY);
+
+const getAllPendingPayout = async (queryParams: IQueryParams) => {
+  const queryBuilder = new QueryBuilder(
+    prisma.payout,
+    {
+      ...queryParams,
+      status: PayoutStatus.PENDING,
+    },
+    {
+      searchableFields: [
+        "merchant.businessName",
+        "merchant.user.name",
+        "transactionId",
+      ],
+      filterableFields: ["merchantId", "paymentAccountId", "status"],
+    },
+  )
+    .search()
+    .filter()
+    .sort()
+    .fields()
+    .dynamicInclude(
+      {
+        merchant: {
+          include: {
+            user: true,
+          },
+        },
+        paymentAccount: true,
+      },
+      ["merchant", "paymentAccount"],
+    )
+    .paginate();
+
+  return await queryBuilder.execute();
+};
 
 const createPayoutRequest = async (
   currentUser: IRequestUser,
@@ -195,6 +233,7 @@ const processStripePayout = async (payoutId: string) => {
 };
 
 export const payoutService = {
+  getAllPendingPayout,
   createPayoutRequest,
   processStripePayout,
 };
