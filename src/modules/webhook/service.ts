@@ -15,14 +15,10 @@ const processCheckoutSessionCompleted = async (
   if (session.payment_status === "paid") {
     const amountPaid = (session.amount_total || 0) / 100;
 
-    // Optional but recommended: Check if this session was already processed
-    // to prevent duplicate balance increments if Stripe sends the webhook twice.
-    // (You would need a `paymentIntentId` or `sessionId` column in a transactions table).
-
     await prisma.merchant.update({
       where: { id: merchantId },
       data: {
-        balance: { increment: amountPaid },
+        balance: 0,
       },
     });
 
