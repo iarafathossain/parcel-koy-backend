@@ -3,36 +3,817 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>B6A5 Backend</title>
+    <title>B6A5 API Reference</title>
     <style>
+      :root {
+        --bg-main: #f8fafc;
+        --bg-card: #ffffff;
+        --text-main: #0f172a;
+        --text-muted: #64748b;
+        --border-color: #e2e8f0;
+
+        --color-get: #0ea5e9;
+        --bg-get: #e0f2fe;
+        --color-post: #10b981;
+        --bg-post: #d1fae5;
+        --color-put: #f59e0b;
+        --bg-put: #fef3c7;
+        --color-patch: #f97316;
+        --bg-patch: #ffedd5;
+        --color-delete: #ef4444;
+        --bg-delete: #fee2e2;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
       body {
         margin: 0;
-        min-height: 100vh;
-        display: grid;
-        place-items: center;
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        background: linear-gradient(120deg, #f3f9ff, #e8fff5);
-        color: #1f2937;
+        padding: 0;
+        font-family:
+          "Segoe UI",
+          system-ui,
+          -apple-system,
+          sans-serif;
+        background-color: var(--bg-main);
+        color: var(--text-main);
+        line-height: 1.5;
       }
-      .card {
-        padding: 2rem;
-        border-radius: 14px;
-        background: #ffffff;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+
+      header {
+        background: var(--bg-card);
+        padding: 2.5rem 2rem;
         text-align: center;
+        border-bottom: 1px solid var(--border-color);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
       }
-      h1 {
-        margin: 0 0 0.5rem;
-      }
-      p {
+
+      header h1 {
         margin: 0;
+        font-size: 2.5rem;
+        color: var(--text-main);
+        letter-spacing: -0.5px;
+      }
+
+      header p {
+        margin: 0.5rem 0 0;
+        color: var(--text-muted);
+        font-size: 1.1rem;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 0 1.5rem;
+      }
+
+      .api-group {
+        background: var(--bg-card);
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        border: 1px solid var(--border-color);
+        overflow: hidden;
+      }
+
+      .api-group-header {
+        background: #f1f5f9;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .api-group-header h2 {
+        margin: 0;
+        font-size: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .api-group-header .base-route {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        font-family: monospace;
+        font-weight: normal;
+        margin-left: auto;
+      }
+
+      .endpoint {
+        display: grid;
+        grid-template-columns: 80px 260px 1fr auto;
+        align-items: center;
+        gap: 1.5rem;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+        transition: background-color 0.2s;
+      }
+
+      .endpoint:last-child {
+        border-bottom: none;
+      }
+
+      .endpoint:hover {
+        background-color: #f8fafc;
+      }
+
+      .method {
+        font-size: 0.8rem;
+        font-weight: 700;
+        padding: 0.4rem 0.6rem;
+        border-radius: 6px;
+        text-align: center;
+        letter-spacing: 0.5px;
+      }
+
+      .method.get {
+        background: var(--bg-get);
+        color: var(--color-get);
+      }
+      .method.post {
+        background: var(--bg-post);
+        color: var(--color-post);
+      }
+      .method.put {
+        background: var(--bg-put);
+        color: var(--color-put);
+      }
+      .method.patch {
+        background: var(--bg-patch);
+        color: var(--color-patch);
+      }
+      .method.delete {
+        background: var(--bg-delete);
+        color: var(--color-delete);
+      }
+
+      .path {
+        font-family: "Fira Code", "Consolas", monospace;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #334155;
+      }
+
+      .desc {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+      }
+
+      .roles {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        justify-content: flex-end;
+      }
+
+      .role {
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.25rem 0.5rem;
+        border-radius: 9999px;
+        background: #e2e8f0;
+        color: #475569;
+      }
+
+      .role.public {
+        background: #f1f5f9;
+        color: #64748b;
+        border: 1px dashed #cbd5e1;
+      }
+
+      @media (max-width: 992px) {
+        .endpoint {
+          grid-template-columns: 80px 1fr;
+          gap: 1rem;
+        }
+        .desc {
+          grid-column: 1 / -1;
+        }
+        .roles {
+          grid-column: 1 / -1;
+          justify-content: flex-start;
+        }
+      }
+
+      @media (max-width: 600px) {
+        .endpoint {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.5rem;
+        }
+        .api-group-header h2 {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .api-group-header .base-route {
+          margin-left: 0;
+          margin-top: 0.5rem;
+        }
       }
     </style>
   </head>
   <body>
-    <main class="card">
-      <h1>Backend is running</h1>
-      <p>Root route now renders this HTML file.</p>
+    <header>
+      <h1>B6A5 API Reference</h1>
+      <p>System endpoints, methods, and authorization requirements.</p>
+    </header>
+
+    <main class="container">
+      <section class="api-group">
+        <div class="api-group-header">
+          <h2>🔐 Auth Routes <span class="base-route">/api/v1/auth</span></h2>
+        </div>
+
+        <div class="endpoint">
+          <span class="method post">POST</span>
+          <span class="path">/register</span>
+          <span class="desc">Register a new merchant</span>
+          <div class="roles"><span class="role public">Public</span></div>
+        </div>
+        <div class="endpoint">
+          <span class="method post">POST</span>
+          <span class="path">/verify-email</span>
+          <span class="desc">Verify email using OTP</span>
+          <div class="roles"><span class="role public">Public</span></div>
+        </div>
+        <div class="endpoint">
+          <span class="method post">POST</span>
+          <span class="path">/login</span>
+          <span class="desc">Login user</span>
+          <div class="roles"><span class="role public">Public</span></div>
+        </div>
+        <div class="endpoint">
+          <span class="method get">GET</span>
+          <span class="path">/me</span>
+          <span class="desc">Get current logged-in user profile</span>
+          <div class="roles">
+            <span class="role">Admin</span><span class="role">SuperAdmin</span
+            ><span class="role">Merchant</span><span class="role">Rider</span>
+          </div>
+        </div>
+        <div class="endpoint">
+          <span class="method get">GET</span>
+          <span class="path">/refresh-tokens</span>
+          <span class="desc">Issue new access/refresh tokens</span>
+          <div class="roles"><span class="role public">Public</span></div>
+        </div>
+        <div class="endpoint">
+          <span class="method post">POST</span>
+          <span class="path">/logout</span>
+          <span class="desc">Logout current user</span>
+          <div class="roles">
+            <span class="role">Admin</span><span class="role">SuperAdmin</span
+            ><span class="role">Merchant</span><span class="role">Rider</span>
+          </div>
+        </div>
+        <div class="endpoint">
+          <span class="method post">POST</span>
+          <span class="path">/change-password</span>
+          <span class="desc">Change password for logged-in user</span>
+          <div class="roles">
+            <span class="role">Admin</span><span class="role">SuperAdmin</span
+            ><span class="role">Merchant</span><span class="role">Rider</span>
+          </div>
+        </div>
+        <div class="endpoint">
+          <span class="method post">POST</span>
+          <span class="path">/forget-password</span>
+          <span class="desc">Start password reset flow</span>
+          <div class="roles"><span class="role public">Public</span></div>
+        </div>
+        <div class="endpoint">
+          <span class="method post">POST</span>
+          <span class="path">/reset-password</span>
+          <span class="desc">Reset password using token</span>
+          <div class="roles"><span class="role public">Public</span></div>
+        </div>
+        <div class="endpoint">
+          <span class="method post">POST</span>
+          <span class="path">/activate</span>
+          <span class="desc">Activate a user</span>
+          <div class="roles">
+            <span class="role">Admin</span><span class="role">SuperAdmin</span>
+          </div>
+        </div>
+        <div class="endpoint">
+          <span class="method post">POST</span>
+          <span class="path">/block</span>
+          <span class="desc">Block a user</span>
+          <div class="roles">
+            <span class="role">Admin</span><span class="role">SuperAdmin</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="api-group">
+        <div class="api-group-header">
+          <h2>
+            🛡 Admin Routes <span class="base-route">/api/v1/admins</span>
+          </h2>
+        </div>
+        <div class="endpoint">
+          <span class="method get">GET</span>
+          <span class="path">/</span>
+          <span class="desc">Get all admins</span>
+          <div class="roles">
+            <span class="role">Admin</span><span class="role">SuperAdmin</span>
+          </div>
+        </div>
+        <div class="endpoint">
+          <span class="method get">GET</span>
+          <span class="path">/:id</span>
+          <span class="desc">Get a single admin by ID</span>
+          <div class="roles">
+            <span class="role">Admin</span><span class="role">SuperAdmin</span>
+          </div>
+        </div>
+        <div class="endpoint">
+          <span class="method post">POST</span>
+          <span class="path">/by-email</span>
+          <span class="desc">Get a single admin by email</span>
+          <div class="roles">
+            <span class="role">Admin</span><span class="role">SuperAdmin</span>
+          </div>
+        </div>
+        <div class="endpoint">
+          <span class="method patch">PATCH</span>
+          <span class="path">/profile</span>
+          <span class="desc">Update admin profile</span>
+          <div class="roles">
+            <span class="role">Admin</span><span class="role">SuperAdmin</span>
+          </div>
+        </div>
+        <div class="endpoint">
+          <span class="method delete">DELETE</span>
+          <span class="path">/:id</span>
+          <span class="desc">Soft delete admin by ID</span>
+          <div class="roles">
+            <span class="role">Admin</span><span class="role">SuperAdmin</span>
+          </div>
+        </div>
+        <div class="endpoint">
+          <span class="method delete">DELETE</span>
+          <span class="path">/:id/permanent</span>
+          <span class="desc">Permanently delete admin by ID</span>
+          <div class="roles">
+            <span class="role">Admin</span><span class="role">SuperAdmin</span>
+          </div>
+        </div>
+        <div class="endpoint">
+          <span class="method post">POST</span>
+          <span class="path">/delete</span>
+          <span class="desc">Delete a user (custom action)</span>
+          <div class="roles">
+            <span class="role">Admin</span><span class="role">SuperAdmin</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="api-group">
+        <div class="api-group-header">
+          <h2>👥 Users Routes <span class="base-route">/api/v1/users</span></h2>
+        </div>
+        <div class="endpoint">
+          <span class="method post">POST</span>
+          <span class="path">/create-admin</span>
+          <span class="desc">Create an admin user</span>
+          <div class="roles">
+            <span class="role">Admin</span><span class="role">SuperAdmin</span>
+          </div>
+        </div>
+        <div class="endpoint">
+          <span class="method post">POST</span>
+          <span class="path">/create-rider</span>
+          <span class="desc">Create a rider user</span>
+          <div class="roles">
+            <span class="role">Admin</span><span class="role">SuperAdmin</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="api-group">
+        <div class="api-group-header">
+          <h2>
+            📦 Parcel Routes <span class="base-route">/api/v1/parcels</span>
+          </h2>
+        </div>
+        <div class="endpoint">
+          <span class="method get">GET</span>
+          <span class="path">/</span>
+          <span class="desc">Get all parcels</span>
+          <div class="roles">
+            <span class="role">Admin</span><span class="role">SuperAdmin</span>
+          </div>
+        </div>
+        <div class="endpoint">
+          <span class="method post">POST</span>
+          <span class="path">/</span>
+          <span class="desc">Create a parcel</span>
+          <div class="roles"><span class="role">Merchant</span></div>
+        </div>
+        <div class="endpoint">
+          <span class="method put">PUT</span>
+          <span class="path">/:id</span>
+          <span class="desc">Update parcel details</span>
+          <div class="roles"><span class="role">Merchant</span></div>
+        </div>
+        <div class="endpoint">
+          <span class="method patch">PATCH</span>
+          <span class="path">/cancel/:id</span>
+          <span class="desc">Cancel parcel</span>
+          <div class="roles"><span class="role">Merchant</span></div>
+        </div>
+        <div class="endpoint">
+          <span class="method patch">PATCH</span>
+          <span class="path">/status/:id</span>
+          <span class="desc">Update parcel status (Admin workflow)</span>
+          <div class="roles">
+            <span class="role">Admin</span><span class="role">SuperAdmin</span>
+          </div>
+        </div>
+        <div class="endpoint">
+          <span class="method patch">PATCH</span>
+          <span class="path">/rider-status/:id</span>
+          <span class="desc">Update parcel status (Rider workflow)</span>
+          <div class="roles"><span class="role">Rider</span></div>
+        </div>
+        <div class="endpoint">
+          <span class="method post">POST</span>
+          <span class="path">/delivery-otp/:id</span>
+          <span class="desc">Send delivery OTP to customer</span>
+          <div class="roles"><span class="role">Rider</span></div>
+        </div>
+        <div class="endpoint">
+          <span class="method patch">PATCH</span>
+          <span class="path">/verify-delivery/:id</span>
+          <span class="desc">Verify OTP & mark as delivered</span>
+          <div class="roles"><span class="role">Rider</span></div>
+        </div>
+        <div class="endpoint">
+          <span class="method get">GET</span>
+          <span class="path">/tracking/:trackingId</span>
+          <span class="desc">Public tracking details</span>
+          <div class="roles"><span class="role public">Public</span></div>
+        </div>
+      </section>
+
+      <section class="api-group">
+        <div class="api-group-header">
+          <h2>
+            🛵 Rider Routes <span class="base-route">/api/v1/riders</span>
+          </h2>
+        </div>
+        <div class="endpoint">
+          <span class="method get">GET</span>
+          <span class="path">/</span>
+          <span class="desc">Get all riders</span>
+          <div class="roles">
+            <span class="role">Admin</span><span class="role">SuperAdmin</span>
+          </div>
+        </div>
+        <div class="endpoint">
+          <span class="method get">GET</span>
+          <span class="path">/:id</span>
+          <span class="desc">Get rider by ID</span>
+          <div class="roles"><span class="role public">Public</span></div>
+        </div>
+        <div class="endpoint">
+          <span class="method post">POST</span>
+          <span class="path">/by-email</span>
+          <span class="desc">Get rider by email</span>
+          <div class="roles">
+            <span class="role">Admin</span><span class="role">SuperAdmin</span>
+          </div>
+        </div>
+        <div class="endpoint">
+          <span class="method patch">PATCH</span>
+          <span class="path">/profile</span>
+          <span class="desc">Update rider profile</span>
+          <div class="roles">
+            <span class="role">Rider</span><span class="role">Admin</span
+            ><span class="role">SuperAdmin</span>
+          </div>
+        </div>
+        <div class="endpoint">
+          <span class="method patch">PATCH</span>
+          <span class="path">/:id/hub</span>
+          <span class="desc">Assign/update rider's hub</span>
+          <div class="roles">
+            <span class="role">Admin</span><span class="role">SuperAdmin</span>
+          </div>
+        </div>
+        <div class="endpoint">
+          <span class="method get">GET</span>
+          <span class="path">/:id/parcels</span>
+          <span class="desc">Get parcels assigned to a specific rider</span>
+          <div class="roles">
+            <span class="role">Admin</span><span class="role">SuperAdmin</span
+            ><span class="role">Rider</span><span class="role">Merchant</span>
+          </div>
+        </div>
+        <div class="endpoint">
+          <span class="method get">GET</span>
+          <span class="path">/my-assigned-parcels</span>
+          <span class="desc">Current rider’s assigned parcels</span>
+          <div class="roles"><span class="role">Rider</span></div>
+        </div>
+        <div class="endpoint">
+          <span class="method get">GET</span>
+          <span class="path">/my-assigned-pickup-parcels</span>
+          <span class="desc">Current rider’s assigned pickup tasks</span>
+          <div class="roles"><span class="role">Rider</span></div>
+        </div>
+        <div class="endpoint">
+          <span class="method get">GET</span>
+          <span class="path">/my-assigned-delivery-parcels</span>
+          <span class="desc">Current rider’s assigned delivery tasks</span>
+          <div class="roles"><span class="role">Rider</span></div>
+        </div>
+        <div class="endpoint">
+          <span class="method get">GET</span>
+          <span class="path">/my-cash-handovers</span>
+          <span class="desc">Rider's cash handover history</span>
+          <div class="roles">
+            <span class="role">Rider</span><span class="role">Admin</span
+            ><span class="role">SuperAdmin</span>
+          </div>
+        </div>
+        <div class="endpoint">
+          <span class="method patch">PATCH</span>
+          <span class="path">/soft-delete/:id</span>
+          <span class="desc">Soft delete rider</span>
+          <div class="roles">
+            <span class="role">Admin</span><span class="role">SuperAdmin</span>
+          </div>
+        </div>
+        <div class="endpoint">
+          <span class="method delete">DELETE</span>
+          <span class="path">/:id</span>
+          <span class="desc">Permanently delete rider</span>
+          <div class="roles">
+            <span class="role">Admin</span><span class="role">SuperAdmin</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="api-group">
+        <div class="api-group-header">
+          <h2>
+            🏪 Merchant Routes <span class="base-route">/api/v1/merchants</span>
+          </h2>
+        </div>
+        <div class="endpoint">
+          <span class="method get">GET</span>
+          <span class="path">/</span>
+          <span class="desc">Get all merchants</span>
+          <div class="roles">
+            <span class="role">Admin</span><span class="role">SuperAdmin</span>
+          </div>
+        </div>
+        <div class="endpoint">
+          <span class="method get">GET</span>
+          <span class="path">/:id</span>
+          <span class="desc">Get merchant by ID</span>
+          <div class="roles">
+            <span class="role">Merchant</span><span class="role">Rider</span
+            ><span class="role">Admin</span><span class="role">SuperAdmin</span>
+          </div>
+        </div>
+        <div class="endpoint">
+          <span class="method post">POST</span>
+          <span class="path">/by-email</span>
+          <span class="desc">Get merchant by email</span>
+          <div class="roles">
+            <span class="role">Admin</span><span class="role">SuperAdmin</span>
+          </div>
+        </div>
+        <div class="endpoint">
+          <span class="method patch">PATCH</span>
+          <span class="path">/profile</span>
+          <span class="desc">Update merchant profile</span>
+          <div class="roles">
+            <span class="role">Merchant</span><span class="role">Admin</span
+            ><span class="role">SuperAdmin</span>
+          </div>
+        </div>
+        <div class="endpoint">
+          <span class="method get">GET</span>
+          <span class="path">/:id/parcels</span>
+          <span class="desc">Get parcels belonging to a merchant</span>
+          <div class="roles">
+            <span class="role">Admin</span><span class="role">SuperAdmin</span
+            ><span class="role">Rider</span><span class="role">Merchant</span>
+          </div>
+        </div>
+        <div class="endpoint">
+          <span class="method post">POST</span>
+          <span class="path">/payment-requests</span>
+          <span class="desc">Create payout/payment request</span>
+          <div class="roles"><span class="role">Merchant</span></div>
+        </div>
+        <div class="endpoint">
+          <span class="method delete">DELETE</span>
+          <span class="path">/:id</span>
+          <span class="desc">Soft delete merchant</span>
+          <div class="roles">
+            <span class="role">Admin</span><span class="role">SuperAdmin</span>
+          </div>
+        </div>
+        <div class="endpoint">
+          <span class="method delete">DELETE</span>
+          <span class="path">/:id/permanent</span>
+          <span class="desc">Permanently delete merchant</span>
+          <div class="roles">
+            <span class="role">Admin</span><span class="role">SuperAdmin</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="api-group">
+        <div class="api-group-header">
+          <h2>🏢 Hub Routes <span class="base-route">/api/v1/hubs</span></h2>
+        </div>
+        <div class="endpoint">
+          <span class="method get">GET</span>
+          <span class="path">/</span>
+          <span class="desc">List all hubs</span>
+          <div class="roles"><span class="role public">Public</span></div>
+        </div>
+        <div class="endpoint">
+          <span class="method get">GET</span>
+          <span class="path">/:slug</span>
+          <span class="desc">Get hub by slug</span>
+          <div class="roles"><span class="role public">Public</span></div>
+        </div>
+        <div class="endpoint">
+          <span class="method post">POST</span>
+          <span class="path">/</span>
+          <span class="desc">Create a new hub</span>
+          <div class="roles">
+            <span class="role">Admin</span><span class="role">SuperAdmin</span>
+          </div>
+        </div>
+        <div class="endpoint">
+          <span class="method patch">PATCH</span>
+          <span class="path">/:slug</span>
+          <span class="desc">Update hub details</span>
+          <div class="roles">
+            <span class="role">Admin</span><span class="role">SuperAdmin</span>
+          </div>
+        </div>
+        <div class="endpoint">
+          <span class="method get">GET</span>
+          <span class="path">/:hubId/cash-collections</span>
+          <span class="desc">Get hub cash collections (filter by date)</span>
+          <div class="roles">
+            <span class="role">Admin</span><span class="role">SuperAdmin</span>
+          </div>
+        </div>
+        <div class="endpoint">
+          <span class="method delete">DELETE</span>
+          <span class="path">/:slug</span>
+          <span class="desc">Delete hub</span>
+          <div class="roles">
+            <span class="role">Admin</span><span class="role">SuperAdmin</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="api-group">
+        <div class="api-group-header">
+          <h2>
+            💵 Pricing Routes <span class="base-route">/api/v1/pricing</span>
+          </h2>
+        </div>
+        <div class="endpoint">
+          <span class="method get">GET</span>
+          <span class="path">/</span>
+          <span class="desc">List pricing rules</span>
+          <div class="roles"><span class="role public">Public</span></div>
+        </div>
+        <div class="endpoint">
+          <span class="method get">GET</span>
+          <span class="path">/:id</span>
+          <span class="desc">Get pricing rule by ID</span>
+          <div class="roles"><span class="role public">Public</span></div>
+        </div>
+        <div class="endpoint">
+          <span class="method post">POST</span>
+          <span class="path">/</span>
+          <span class="desc">Create pricing rule</span>
+          <div class="roles">
+            <span class="role">Admin</span><span class="role">SuperAdmin</span>
+          </div>
+        </div>
+        <div class="endpoint">
+          <span class="method post">POST</span>
+          <span class="path">/delivery-charge</span>
+          <span class="desc">Calculate delivery charge dynamically</span>
+          <div class="roles"><span class="role public">Public</span></div>
+        </div>
+        <div class="endpoint">
+          <span class="method patch">PATCH</span>
+          <span class="path">/:id</span>
+          <span class="desc">Update pricing rule</span>
+          <div class="roles">
+            <span class="role">Admin</span><span class="role">SuperAdmin</span>
+          </div>
+        </div>
+        <div class="endpoint">
+          <span class="method delete">DELETE</span>
+          <span class="path">/:id</span>
+          <span class="desc">Delete pricing rule</span>
+          <div class="roles">
+            <span class="role">Admin</span><span class="role">SuperAdmin</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="api-group">
+        <div class="api-group-header">
+          <h2>📝 Notes Routes <span class="base-route">/api/v1/notes</span></h2>
+        </div>
+        <div class="endpoint">
+          <span class="method get">GET</span>
+          <span class="path">/:parcelId</span>
+          <span class="desc">Get notes for a specific parcel</span>
+          <div class="roles">
+            <span class="role">Admin</span><span class="role">SuperAdmin</span
+            ><span class="role">Merchant</span><span class="role">Rider</span>
+          </div>
+        </div>
+        <div class="endpoint">
+          <span class="method post">POST</span>
+          <span class="path">/</span>
+          <span class="desc">Add note to a parcel</span>
+          <div class="roles">
+            <span class="role">Admin</span><span class="role">SuperAdmin</span
+            ><span class="role">Merchant</span><span class="role">Rider</span>
+          </div>
+        </div>
+        <div class="endpoint">
+          <span class="method patch">PATCH</span>
+          <span class="path">/:id</span>
+          <span class="desc">Update note</span>
+          <div class="roles">
+            <span class="role">Admin</span><span class="role">SuperAdmin</span>
+          </div>
+        </div>
+        <div class="endpoint">
+          <span class="method delete">DELETE</span>
+          <span class="path">/:id</span>
+          <span class="desc">Delete note</span>
+          <div class="roles">
+            <span class="role">Admin</span><span class="role">SuperAdmin</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="api-group">
+        <div class="api-group-header">
+          <h2>
+            ⚡ Speed, ⚙️ Method & 📍 Zone
+            <span class="base-route">/api/v1/[type]</span>
+          </h2>
+        </div>
+        <div class="endpoint">
+          <span class="method get">GET</span>
+          <span class="path">/</span>
+          <span class="desc">List entries</span>
+          <div class="roles"><span class="role public">Public</span></div>
+        </div>
+        <div class="endpoint">
+          <span class="method get">GET</span>
+          <span class="path">/:slug</span>
+          <span class="desc">Get entry by slug</span>
+          <div class="roles"><span class="role public">Public</span></div>
+        </div>
+        <div class="endpoint">
+          <span class="method post">POST</span>
+          <span class="path">/</span>
+          <span class="desc">Create new entry</span>
+          <div class="roles">
+            <span class="role">Admin</span><span class="role">SuperAdmin</span>
+          </div>
+        </div>
+        <div class="endpoint">
+          <span class="method patch">PATCH</span>
+          <span class="path">/:slug</span>
+          <span class="desc">Update entry by slug</span>
+          <div class="roles">
+            <span class="role">Admin</span><span class="role">SuperAdmin</span>
+          </div>
+        </div>
+        <div class="endpoint">
+          <span class="method delete">DELETE</span>
+          <span class="path">/:slug</span>
+          <span class="desc">Delete entry by slug</span>
+          <div class="roles">
+            <span class="role">Admin</span><span class="role">SuperAdmin</span>
+          </div>
+        </div>
+      </section>
     </main>
   </body>
 </html>
