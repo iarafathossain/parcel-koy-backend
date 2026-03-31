@@ -63,6 +63,13 @@ router.get(
   riderControllers.getRiderCashHistory,
 );
 
+// GET: /api/v1/riders/my-assigned-parcels - Get all assigned parcels for current rider (Rider only)
+router.get(
+  "/my-assigned-parcels",
+  checkAuth(Role.RIDER),
+  riderControllers.getAllAssignedParcels,
+);
+
 // GET: /api/v1/riders/:id - Get single rider by id (Public)
 router.get("/:id", riderControllers.getSingleRiderById);
 

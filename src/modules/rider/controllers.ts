@@ -195,6 +195,31 @@ const getRiderCashHistory = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getAllAssignedParcels = catchAsync(
+  async (req: Request, res: Response) => {
+    const user = req.user;
+
+    if (!user) {
+      throw new AppError(
+        status.UNAUTHORIZED,
+        "Unauthorized Access! User not found in request",
+      );
+    }
+
+    const queryParams = req.query as IQueryParams;
+
+    const result = await riderServices.getAllAssignedParcels(user, queryParams);
+
+    sendResponse(res, {
+      httpStatusCode: status.OK,
+      success: true,
+      message: "Assigned parcels retrieved successfully",
+      data: result?.data ?? [],
+      meta: result?.meta,
+    });
+  },
+);
+
 export const riderControllers = {
   updateRiderProfile,
   updateRiderHub,
@@ -205,4 +230,5 @@ export const riderControllers = {
   getAllParcelByRider,
   deleteRiderById,
   getRiderCashHistory,
+  getAllAssignedParcels,
 };
