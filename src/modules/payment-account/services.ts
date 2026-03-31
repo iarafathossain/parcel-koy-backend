@@ -118,6 +118,8 @@ const createClearDueCheckout = async (
 
   const currentBalance = Number(merchant.balance);
 
+  console.log("Current balance", currentBalance);
+
   // If balance is 0 or positive, they don't owe anything
   if (currentBalance >= 0) {
     throw new AppError(
@@ -127,7 +129,12 @@ const createClearDueCheckout = async (
   }
 
   // Convert negative balance to positive absolute value, then to cents for Stripe
-  const amountToPay = Math.abs(currentBalance);
+  let amountToPay = Math.abs(currentBalance);
+  if (amountToPay < 50) {
+    // bdt 0.50 minimum charge for Stripe, so we set a floor
+    // Stripe has a minimum charge amount of $0.50, so we round up if it's less than that
+    amountToPay = 50;
+  }
   const amountInCents = Math.round(amountToPay * 100);
 
   // Create a Stripe Checkout Session where the platform collects the money
@@ -136,7 +143,7 @@ const createClearDueCheckout = async (
     line_items: [
       {
         price_data: {
-          currency: "usd", // Make sure this matches your platform currency
+          currency: "bdt",
           product_data: {
             name: "Clear Platform Due Balance",
             description: `Payment to clear negative balance for ${merchant.businessName}`,

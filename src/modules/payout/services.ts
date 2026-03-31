@@ -171,7 +171,7 @@ const processStripePayout = async (payoutId: string) => {
     // 1. Transfer funds from your platform balance to the Merchant's Connected Account
     const transfer = await stripe.transfers.create({
       amount: amountInSmallestUnit,
-      currency: "usd", // NOTE: Ensure this matches your supported platform currency
+      currency: "bdt",
       destination: payout.paymentAccount.stripeConnectAccountId,
       metadata: {
         payoutId: payout.id,
