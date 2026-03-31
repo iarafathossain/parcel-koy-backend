@@ -68,7 +68,6 @@ export const auth = betterAuth({
     emailOTP({
       overrideDefaultEmailVerification: true,
       async sendVerificationOTP({ email, otp, type }) {
-        process.env.SKIP_EMAIL_VERIFICATION = "true"; // TODO: Remove in production
         // Skip email sending during seeding
         if (process.env.SKIP_EMAIL_VERIFICATION === "true") {
           return;
