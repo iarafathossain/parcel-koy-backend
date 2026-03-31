@@ -70,6 +70,20 @@ router.get(
   riderControllers.getAllAssignedParcels,
 );
 
+// GET: /api/v1/riders/my-assigned-pickup-parcels - Get all assigned pickup parcels for current rider (Rider only)
+router.get(
+  "/my-assigned-pickup-parcels",
+  checkAuth(Role.RIDER),
+  riderControllers.getAllAssignedPickupParcel,
+);
+
+// GET: /api/v1/riders/my-assigned-delivery-parcels - Get all assigned delivery parcels for current rider (Rider only)
+router.get(
+  "/my-assigned-delivery-parcels",
+  checkAuth(Role.RIDER),
+  riderControllers.getAllAssignedDeliveryParcel,
+);
+
 // GET: /api/v1/riders/:id - Get single rider by id (Public)
 router.get("/:id", riderControllers.getSingleRiderById);
 

@@ -610,6 +610,146 @@ const getAllAssignedParcels = async (
   return await queryBuilder.execute();
 };
 
+const getAllAssignedPickupParcel = async (
+  currentUser: IRequestUser,
+  queryParams: IQueryParams,
+) => {
+  if (currentUser.role !== "RIDER") {
+    throw new AppError(
+      status.FORBIDDEN,
+      "Only riders can access assigned pickup parcels",
+    );
+  }
+
+  const rider = await prisma.rider.findUnique({
+    where: {
+      userId: currentUser.userId,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (!rider) {
+    throw new AppError(status.NOT_FOUND, "Rider profile not found");
+  }
+
+  const queryBuilder = new QueryBuilder(prisma.parcel, queryParams, {
+    searchableFields: [
+      "trackingId",
+      "receiverName",
+      "receiverContactNumber",
+      "pickupAddress",
+      "deliveryAddress",
+    ],
+    filterableFields: [
+      "status",
+      "merchantId",
+      "categoryId",
+      "originAreaId",
+      "destinationAreaId",
+      "speedId",
+      "pickupMethodId",
+      "deliveryMethodId",
+      "pickupRiderId",
+      "deliveryRiderId",
+      "originHubId",
+      "destinationHubId",
+    ],
+  })
+    // Filter strictly for pickups assigned to this rider
+    .where({ pickupRiderId: rider.id })
+    .search()
+    .filter()
+    .sort()
+    .fields()
+    .dynamicInclude(
+      {
+        merchant: true,
+        category: true,
+        originArea: true,
+        destinationArea: true,
+        speed: true,
+        pickupMethod: true,
+        deliveryMethod: true,
+      },
+      ["merchant", "category", "originArea", "destinationArea"],
+    )
+    .paginate();
+
+  return await queryBuilder.execute();
+};
+
+const getAllAssignedDeliveryParcel = async (
+  currentUser: IRequestUser,
+  queryParams: IQueryParams,
+) => {
+  if (currentUser.role !== "RIDER") {
+    throw new AppError(
+      status.FORBIDDEN,
+      "Only riders can access assigned delivery parcels",
+    );
+  }
+
+  const rider = await prisma.rider.findUnique({
+    where: {
+      userId: currentUser.userId,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (!rider) {
+    throw new AppError(status.NOT_FOUND, "Rider profile not found");
+  }
+
+  const queryBuilder = new QueryBuilder(prisma.parcel, queryParams, {
+    searchableFields: [
+      "trackingId",
+      "receiverName",
+      "receiverContactNumber",
+      "pickupAddress",
+      "deliveryAddress",
+    ],
+    filterableFields: [
+      "status",
+      "merchantId",
+      "categoryId",
+      "originAreaId",
+      "destinationAreaId",
+      "speedId",
+      "pickupMethodId",
+      "deliveryMethodId",
+      "pickupRiderId",
+      "deliveryRiderId",
+      "originHubId",
+      "destinationHubId",
+    ],
+  })
+    // Filter strictly for deliveries assigned to this rider
+    .where({ deliveryRiderId: rider.id })
+    .search()
+    .filter()
+    .sort()
+    .fields()
+    .dynamicInclude(
+      {
+        merchant: true,
+        category: true,
+        originArea: true,
+        destinationArea: true,
+        speed: true,
+        pickupMethod: true,
+        deliveryMethod: true,
+      },
+      ["merchant", "category", "originArea", "destinationArea"],
+    )
+    .paginate();
+
+  return await queryBuilder.execute();
+};
+
 export const riderServices = {
   updateRiderProfile,
   updateRiderHub,
@@ -621,4 +761,6 @@ export const riderServices = {
   deleteRiderById,
   getRiderCashHistory,
   getAllAssignedParcels,
+  getAllAssignedPickupParcel,
+  getAllAssignedDeliveryParcel,
 };

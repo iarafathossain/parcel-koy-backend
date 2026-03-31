@@ -220,6 +220,62 @@ const getAllAssignedParcels = catchAsync(
   },
 );
 
+const getAllAssignedPickupParcel = catchAsync(
+  async (req: Request, res: Response) => {
+    const user = req.user;
+
+    if (!user) {
+      throw new AppError(
+        status.UNAUTHORIZED,
+        "Unauthorized Access! User not found in request",
+      );
+    }
+
+    const queryParams = req.query as IQueryParams;
+
+    const result = await riderServices.getAllAssignedPickupParcel(
+      user,
+      queryParams,
+    );
+
+    sendResponse(res, {
+      httpStatusCode: status.OK,
+      success: true,
+      message: "Assigned pickup parcels retrieved successfully",
+      data: result?.data ?? [],
+      meta: result?.meta,
+    });
+  },
+);
+
+const getAllAssignedDeliveryParcel = catchAsync(
+  async (req: Request, res: Response) => {
+    const user = req.user;
+
+    if (!user) {
+      throw new AppError(
+        status.UNAUTHORIZED,
+        "Unauthorized Access! User not found in request",
+      );
+    }
+
+    const queryParams = req.query as IQueryParams;
+
+    const result = await riderServices.getAllAssignedDeliveryParcel(
+      user,
+      queryParams,
+    );
+
+    sendResponse(res, {
+      httpStatusCode: status.OK,
+      success: true,
+      message: "Assigned delivery parcels retrieved successfully",
+      data: result?.data ?? [],
+      meta: result?.meta,
+    });
+  },
+);
+
 export const riderControllers = {
   updateRiderProfile,
   updateRiderHub,
@@ -231,4 +287,6 @@ export const riderControllers = {
   deleteRiderById,
   getRiderCashHistory,
   getAllAssignedParcels,
+  getAllAssignedPickupParcel,
+  getAllAssignedDeliveryParcel,
 };
