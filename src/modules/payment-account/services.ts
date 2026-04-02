@@ -130,10 +130,10 @@ const createClearDueCheckout = async (
 
   // Convert negative balance to positive absolute value, then to cents for Stripe
   let amountToPay = Math.abs(currentBalance);
-  if (amountToPay < 50) {
-    // bdt 0.50 minimum charge for Stripe, so we set a floor
+  if (amountToPay < 0.5) {
+    // USD 0.50 minimum charge for Stripe, so we set a floor
     // Stripe has a minimum charge amount of $0.50, so we round up if it's less than that
-    amountToPay = 50;
+    amountToPay = 0.5;
   }
   const amountInCents = Math.round(amountToPay * 100);
 
@@ -143,7 +143,7 @@ const createClearDueCheckout = async (
     line_items: [
       {
         price_data: {
-          currency: "bdt",
+          currency: "usd",
           product_data: {
             name: "Clear Platform Due Balance",
             description: `Payment to clear negative balance for ${merchant.businessName}`,

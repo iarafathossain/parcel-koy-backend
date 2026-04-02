@@ -13,22 +13,15 @@ import { RequestPayoutPayload } from "./validators";
 
 const stripe = new Stripe(envVariables.STRIPE.STRIPE_SECRET_KEY);
 
-const getAllPendingPayout = async (queryParams: IQueryParams) => {
-  const queryBuilder = new QueryBuilder(
-    prisma.payout,
-    {
-      ...queryParams,
-      status: PayoutStatus.PENDING,
-    },
-    {
-      searchableFields: [
-        "merchant.businessName",
-        "merchant.user.name",
-        "transactionId",
-      ],
-      filterableFields: ["merchantId", "paymentAccountId", "status"],
-    },
-  )
+const getAllPayouts = async (queryParams: IQueryParams) => {
+  const queryBuilder = new QueryBuilder(prisma.payout, queryParams, {
+    searchableFields: [
+      "merchant.businessName",
+      "merchant.user.name",
+      "transactionId",
+    ],
+    filterableFields: ["merchantId", "paymentAccountId", "status"],
+  })
     .search()
     .filter()
     .sort()
@@ -47,6 +40,13 @@ const getAllPendingPayout = async (queryParams: IQueryParams) => {
     .paginate();
 
   return await queryBuilder.execute();
+};
+
+const getAllPendingPayout = async (queryParams: IQueryParams) => {
+  return await getAllPayouts({
+    ...queryParams,
+    status: PayoutStatus.PENDING,
+  });
 };
 
 const createPayoutRequest = async (
@@ -127,7 +127,7 @@ const createPayoutRequest = async (
       await notificationServices.sendNotification(
         hubManager.userId,
         "New Payout Request",
-        `${merchant.businessName} has requested a payout of ${amount} BDT.`,
+        `${merchant.businessName} has requested a payout of ${amount} USD.`,
       );
     }
   }
@@ -145,6 +145,7 @@ const processStripePayout = async (payoutId: string) => {
   });
 
   if (!payout) throw new AppError(status.NOT_FOUND, "Payout not found");
+  console.log("Processing payout:", payout);
   if (payout.status !== PayoutStatus.PENDING)
     throw new AppError(
       status.BAD_REQUEST,
@@ -171,7 +172,7 @@ const processStripePayout = async (payoutId: string) => {
     // 1. Transfer funds from your platform balance to the Merchant's Connected Account
     const transfer = await stripe.transfers.create({
       amount: amountInSmallestUnit,
-      currency: "bdt",
+      currency: "usd",
       destination: payout.paymentAccount.stripeConnectAccountId,
       metadata: {
         payoutId: payout.id,
@@ -233,6 +234,7 @@ const processStripePayout = async (payoutId: string) => {
 };
 
 export const payoutService = {
+  getAllPayouts,
   getAllPendingPayout,
   createPayoutRequest,
   processStripePayout,

@@ -1,6 +1,8 @@
 import status from "http-status";
 import AppError from "../../errors/app-error";
+import { IQueryParams } from "../../interfaces/query-type";
 import { prisma } from "../../libs/prisma";
+import { QueryBuilder } from "../../utils/query-builder";
 import { notificationServices } from "../notification/services";
 import { CollectCashPayload } from "./validators";
 
@@ -27,7 +29,7 @@ export const collectCash = async (
   if (Number(rider.cashInHand) < payload.amount) {
     throw new AppError(
       status.BAD_REQUEST,
-      `Rider only has ${rider.cashInHand} BDT in hand. Cannot collect ${payload.amount} BDT.`,
+      `Rider only has ${rider.cashInHand} USD in hand. Cannot collect ${payload.amount} USD.`,
     );
   }
 
@@ -35,7 +37,7 @@ export const collectCash = async (
   if (payload.amount > Number(rider.cashInHand)) {
     throw new AppError(
       status.BAD_REQUEST,
-      `Cannot collect ${payload.amount} BDT. Rider only has ${rider.cashInHand} BDT in hand.`,
+      `Cannot collect ${payload.amount} USD. Rider only has ${rider.cashInHand} USD in hand.`,
     );
   }
 
@@ -103,11 +105,42 @@ export const collectCash = async (
     await notificationServices.sendNotification(
       riderUser.userId,
       "Cash Collection Confirmation",
-      `${payload.amount} BDT has been collected from your cash in hand. Remaining balance: ${Number(riderUser.cashInHand) - payload.amount} BDT.`,
+      `${payload.amount} USD has been collected from your cash in hand. Remaining balance: ${Number(riderUser.cashInHand) - payload.amount} USD.`,
     );
   }
 };
 
+const getAllCashCollections = async (queryParams: IQueryParams) => {
+  const queryBuilder = new QueryBuilder(prisma.cashCollection, queryParams, {
+    searchableFields: ["rider.user.name", "admin.user.name"],
+    filterableFields: ["riderId", "adminId", "hubId"],
+  })
+    .search()
+    .filter()
+    .sort()
+    .fields()
+    .dynamicInclude(
+      {
+        rider: {
+          include: {
+            user: true,
+          },
+        },
+        admin: {
+          include: {
+            user: true,
+          },
+        },
+        hub: true,
+      },
+      ["rider", "admin", "hub"],
+    )
+    .paginate();
+
+  return await queryBuilder.execute();
+};
+
 export const cashCollectionServices = {
   collectCash,
+  getAllCashCollections,
 };

@@ -1,8 +1,17 @@
 # ParcelKoy – Courier Delivery Platform
 
+## Official Info
+
+- Backend Repo: https://github.com/iarafathossain/parcel-koy-backend
+- Backend Live All APIs References: https://parcel-koy-backend-1.onrender.com/
+- Super-Admin Email: superadmin@parcelkoy.com
+- Super-Admin Password: SuperAdmin@123
+- Common OTP for delivery confirmation: `1234`
+
 ## 📦 Project Overview
 
-**ParcelKoy** is a comprehensive, web-based courier logistics platform designed to seamlessly manage parcel deliveries from **merchants (senders)** to **customers (receivers)** through a structured logistics workflow.
+**ParcelKoy** is a comprehensive, web-based courier logistics platform designed
+to seamlessly manage parcel deliveries from **merchants (senders)** to **customers (receivers)** through a structured logistics workflow.
 
 The platform handles the complete delivery lifecycle, including:
 
@@ -63,7 +72,7 @@ It is highly recommended to use **pnpm** for managing dependencies in this proje
 ### 1. Clone the repository
 
 ```bash
-git clone <your-repository-url>
+git clone https://github.com/iarafathossain/parcel-koy-backend
 cd parcel-koy-backend
 ```
 
@@ -121,8 +130,7 @@ parcel-koy-backend/
 ├─ tsconfig.json
 ├─ prisma/
 │  ├─ migrations/
-│  └─ schema/            # Multi-file Prisma schemas (admin, auth, parcel, etc.)
-├─ public/
+│  └─ schema/            # Multi-file Prisma schemas (admin, auth, parcel, etc.)├─ public/
 │  ├─ ERD.webp
 │  ├─ index.html
 │  └─ assets/
@@ -136,8 +144,7 @@ parcel-koy-backend/
    ├─ jobs/              # node-cron scheduled tasks
    ├─ libs/              # Third-party library initializations
    ├─ middlewares/       # Express middlewares (auth, validation)
-   ├─ modules/           # Feature-based modules (routes, controllers, services)
-   ├─ routes/            # Main application router
+   ├─ modules/           # Feature-based modules (routes, controllers, services)   ├─ routes/            # Main application router
    ├─ shared/            # Shared utilities and constants
    ├─ templates/         # EJS templates for emails
    └─ utils/             # Helper functions
@@ -198,7 +205,8 @@ parcel-koy-backend/
 - `GET /:id/parcels` — Get parcels assigned to a specific rider **[Admin, SuperAdmin, Rider, Merchant]**
 - `GET /my-assigned-parcels` — Current rider’s assigned parcels **[Rider]**
 - `GET /my-assigned-pickup-parcels` — Current rider’s assigned pickup tasks **[Rider]**
-- `GET /my-assigned-delivery-parcels` — Current rider’s assigned delivery tasks **[Rider]**
+- `GET /my-assigned-delivery-parcels` — Current rider’s assigned delivery tasks
+  **[Rider]**
 - `GET /my-cash-handovers` — Rider's cash handover history **[Rider, Admin, SuperAdmin]**
 - `PATCH /soft-delete/:id` — Soft delete rider **[Admin, SuperAdmin]**
 - `DELETE /:id` — Permanently delete rider **[Admin, SuperAdmin]**
@@ -248,3 +256,9 @@ _(Endpoints follow a similar structure across `/api/v1/speeds/_`, `/api/v1/metho
 - `POST /` — Create new entry **[Admin, SuperAdmin]**
 - `PATCH /:slug` — Update entry by slug **[Admin, SuperAdmin]**
 - `DELETE /:slug` — Delete entry by slug **[Admin, SuperAdmin]**
+
+---
+
+## Ownership
+
+All right belongs to Arafat Hossain.

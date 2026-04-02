@@ -402,7 +402,7 @@ const makePaymentRequest = async (
   if (payload.amount > currentBalance) {
     throw new AppError(
       status.BAD_REQUEST,
-      `Insufficient balance. Your withdrawable balance is ${currentBalance} BDT, but you requested ${payload.amount} BDT.`,
+      `Insufficient balance. Your withdrawable balance is ${currentBalance} USD, but you requested ${payload.amount} USD.`,
     );
   }
 

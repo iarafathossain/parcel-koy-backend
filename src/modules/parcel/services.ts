@@ -315,7 +315,7 @@ const createParcel = async (payload: CreateParcelPayload, userId: string) => {
   if (projectedBalance < Number(merchant.creditLimit)) {
     throw new AppError(
       status.PAYMENT_REQUIRED,
-      `Credit limit exceeded. Your balance is ${merchant.balance} BDT. This delivery costs ${deliveryCharge.price} BDT. Please recharge your account or wait for pending deliveries to complete.`,
+      `Credit limit exceeded. Your balance is ${merchant.balance} USD. This delivery costs ${deliveryCharge.price} USD. Please recharge your account or wait for pending deliveries to complete.`,
     );
   }
 
@@ -1060,7 +1060,7 @@ const verifyAndDeliverParcel = async (parcelId: string, otp: string) => {
         userId: rider.userId,
         status: "DELIVERED",
         hubId: existingParcel.destinationHubId ?? undefined,
-        description: `Parcel delivered successfully. COD amount ${existingParcel.codAmount} BDT added to merchant balance and rider's cash in hand.`,
+        description: `Parcel delivered successfully. COD amount ${existingParcel.codAmount} USD added to merchant balance and rider's cash in hand.`,
       },
     }),
   ]);

@@ -7,6 +7,13 @@ import { requestPayoutZodSchema } from "./validators";
 
 const router = Router();
 
+// GET: /api/v1/payouts - Get all payouts (Admin only)
+router.get(
+  "/transactions",
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  payoutController.getAllPayouts,
+);
+
 // GET: /api/v1/payouts/pending - Get all pending payouts (Admin, Super Admin)
 router.get(
   "/pending",

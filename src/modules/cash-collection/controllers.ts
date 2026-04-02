@@ -1,7 +1,9 @@
 import { Request, Response } from "express";
 import status from "http-status";
 import AppError from "../../errors/app-error";
+import { IQueryParams } from "../../interfaces/query-type";
 import { catchAsync } from "../../shared/catch-async";
+import { sendResponse } from "../../shared/send-response";
 import { cashCollectionServices } from "./services";
 
 export const collectCash = catchAsync(async (req: Request, res: Response) => {
@@ -37,6 +39,25 @@ export const collectCash = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getAllCashCollections = catchAsync(
+  async (req: Request, res: Response) => {
+    const queryParams = req.query as IQueryParams;
+
+    const result = await cashCollectionServices.getAllCashCollections(
+      queryParams,
+    );
+
+    sendResponse(res, {
+      httpStatusCode: status.OK,
+      success: true,
+      message: "Cash collections retrieved successfully",
+      data: result?.data ?? [],
+      meta: result?.meta,
+    });
+  },
+);
+
 export const cashCollectionControllers = {
   collectCash,
+  getAllCashCollections,
 };

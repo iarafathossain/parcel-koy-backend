@@ -6,6 +6,20 @@ import { catchAsync } from "../../shared/catch-async";
 import { sendResponse } from "../../shared/send-response";
 import { payoutService } from "./services";
 
+const getAllPayouts = catchAsync(async (req: Request, res: Response) => {
+  const queryParams = req.query as IQueryParams;
+
+  const result = await payoutService.getAllPayouts(queryParams);
+
+  sendResponse(res, {
+    httpStatusCode: status.OK,
+    success: true,
+    message: "Payouts retrieved successfully",
+    data: result?.data ?? [],
+    meta: result?.meta,
+  });
+});
+
 const getAllPendingPayout = catchAsync(async (req: Request, res: Response) => {
   const queryParams = req.query as IQueryParams;
 
@@ -55,6 +69,7 @@ const processPayout = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const payoutController = {
+  getAllPayouts,
   getAllPendingPayout,
   requestPayout,
   processPayout,
