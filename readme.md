@@ -1,12 +1,18 @@
 # ParcelKoy – Courier Delivery Platform
 
-## Official Info
+## Links
 
 - Backend Repo: https://github.com/iarafathossain/parcel-koy-backend
 - Backend Live All APIs References: https://parcel-koy-backend-1.onrender.com/
-- Super-Admin Email: superadmin@parcelkoy.com
-- Super-Admin Password: SuperAdmin@123
-- Common OTP for delivery confirmation: `1234`
+
+## Demo Access (Super Admin)
+
+- Email: superadmin@parcelkoy.com
+- Password: SuperAdmin@123
+
+## Delivery OTP Note
+
+- Use common OTP: `1234` for confirming delivery.
 
 ## 📦 Project Overview
 
