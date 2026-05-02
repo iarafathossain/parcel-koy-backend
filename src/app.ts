@@ -5,6 +5,7 @@ import express, { Application } from "express";
 import path from "path";
 import qs from "qs";
 import { envVariables } from "./config/env";
+import { keepServerAlive } from "./jobs/keep-alive";
 import { startNotificationCleanupJob } from "./jobs/notification-cleanup";
 import { auth } from "./libs/auth";
 import { globalErrorHandler } from "./middlewares/global-error-handler";
@@ -55,6 +56,9 @@ app.use("/api/v1", indexRoutes);
 
 // Start background cron jobs
 startNotificationCleanupJob();
+
+// keep server alive cron job
+keepServerAlive();
 
 // Root route renders an HTML file
 app.get("/", (_req, res) => {

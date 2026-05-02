@@ -90,3 +90,13 @@ export const updatePricingZodSchema = zod
   );
 
 export type UpdatePricingRulePayload = zod.infer<typeof updatePricingZodSchema>;
+
+export const getDeliveryChargeByAIZodSchema = zod.object({
+  from: zod.string(),
+  to: zod.string(),
+  weight: zod.number().min(0, "Weight must be greater than or equal to 0"),
+});
+
+export type GetDeliveryChargeByAIPayload = zod.infer<
+  typeof getDeliveryChargeByAIZodSchema
+>;

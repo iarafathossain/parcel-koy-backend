@@ -5,6 +5,7 @@ import { prisma } from "../../libs/prisma";
 import { QueryBuilder } from "../../utils/query-builder";
 import {
   CreatePricingRulePayload,
+  GetDeliveryChargeByAIPayload,
   GetDeliveryChargePayload,
   UpdatePricingRulePayload,
 } from "./validators";
@@ -512,6 +513,10 @@ const getDeliveryCharge = async (payload: GetDeliveryChargePayload) => {
   }
 
   return pricingRule;
+};
+
+const getDeliveryChargeByAI = async (payload: GetDeliveryChargeByAIPayload) => {
+  console.log("Received AI delivery charge request:", payload);
 };
 
 export const pricingServices = {
