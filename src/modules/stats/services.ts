@@ -151,7 +151,9 @@ const getAdminStats = async (user: IRequestUser) => {
     : undefined;
 
   const [
+    systemOverview,
     scopedParcelCount,
+    inProgressParcels,
     scopedStatusSummary,
     scopedFinancialSummary,
     pieChart,
@@ -161,7 +163,19 @@ const getAdminStats = async (user: IRequestUser) => {
     scopedTrackingLogs,
     scopedNotes,
   ] = await Promise.all([
+    getTotalCount(),
     prisma.parcel.count({ where: parcelWhere }),
+    prisma.parcel.count({
+      where: {
+        status: {
+          notIn: [
+            ParcelStatus.DELIVERED,
+            ParcelStatus.CANCELLED,
+            ParcelStatus.RETURNED_TO_MERCHANT,
+          ],
+        },
+      },
+    }),
     getParcelStatusSummary(parcelWhere),
     getParcelFinancialSummary(parcelWhere),
     getPieChartData(parcelWhere),
@@ -192,11 +206,13 @@ const getAdminStats = async (user: IRequestUser) => {
   ]);
 
   return {
+    overview: systemOverview,
     role: Role.ADMIN,
     scope: managedHubIds.length ? "managed-hubs" : "system",
     managedHubs: admin?.managedHubs ?? [],
     parcels: {
       total: scopedParcelCount,
+      inProgress: inProgressParcels,
       byStatus: scopedStatusSummary,
     },
     operations: {

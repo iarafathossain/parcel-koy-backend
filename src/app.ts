@@ -5,7 +5,6 @@ import express, { Application } from "express";
 import path from "path";
 import qs from "qs";
 import { envVariables } from "./config/env";
-import { keepServerAlive } from "./jobs/keep-alive";
 import { startNotificationCleanupJob } from "./jobs/notification-cleanup";
 import { auth } from "./libs/auth";
 import { globalErrorHandler } from "./middlewares/global-error-handler";
@@ -27,8 +26,6 @@ app.use(
 );
 
 // 1. WEBHOOK ROUTE GOES FIRST!
-// Use express.raw() so req.body remains a Buffer for signature verification
-//TODO: check todo file
 app.post(
   "/api/v1/webhooks/stripe",
   express.raw({ type: "application/json" }),
@@ -57,12 +54,14 @@ app.use("/api/v1", indexRoutes);
 // Start background cron jobs
 startNotificationCleanupJob();
 
-// keep server alive cron job
-keepServerAlive();
-
 // Root route renders an HTML file
 app.get("/", (_req, res) => {
   res.sendFile(path.join(process.cwd(), "public", "index.html"));
+});
+
+// Health check route for cron-job.org
+app.get("/api/health", (_req, res) => {
+  res.status(200).json({ status: "ok", message: "Server is wide awake!" });
 });
 
 // Global error handler
