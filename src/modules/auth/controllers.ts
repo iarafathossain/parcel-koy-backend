@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import status from "http-status";
+import { envVariables } from "../../config/env";
 import AppError from "../../errors/app-error";
 import { catchAsync } from "../../shared/catch-async";
 import { sendResponse } from "../../shared/send-response";
@@ -7,6 +8,13 @@ import { cookieUtils } from "../../utils/cookie";
 import { tokenUtils } from "../../utils/token";
 import { authServices } from "./services";
 import { ForgotPasswordZodSchema } from "./validators";
+
+const authCookieOptions = {
+  httpOnly: true,
+  secure: envVariables.NODE_ENV === "production",
+  sameSite:
+    envVariables.NODE_ENV === "production" ? ("none" as const) : ("lax" as const),
+};
 
 const registerMerchant = catchAsync(async (req: Request, res: Response) => {
   const payload = req.body;
@@ -156,19 +164,13 @@ const logout = catchAsync(async (req: Request, res: Response) => {
 
   // Clear cookies
   cookieUtils.clearCookie(res, "access_token", {
-    httpOnly: true,
-    secure: true,
-    sameSite: "none",
+    ...authCookieOptions,
   });
   cookieUtils.clearCookie(res, "refresh_token", {
-    httpOnly: true,
-    secure: true,
-    sameSite: "none",
+    ...authCookieOptions,
   });
   cookieUtils.clearCookie(res, "better-auth.session_token", {
-    httpOnly: true,
-    secure: true,
-    sameSite: "none",
+    ...authCookieOptions,
   });
 
   sendResponse(res, {

@@ -115,29 +115,29 @@ export const auth = betterAuth({
     }),
   ],
   session: {
-    expiresIn: 60 * 60 * 60 * 24, // 1 day in second
-    updateAge: 60 * 60 * 60 * 24, // 1 day in second
+    expiresIn: 60 * 60 * 24, // 1 day in second
+    updateAge: 60 * 60 * 24, // 1 day in second
     cookieCache: {
       enabled: true,
-      maxAge: 60 * 60 * 60 * 24, // 1 day in second
+      maxAge: 60 * 60 * 24, // 1 day in second
     },
   },
   advanced: {
-    useSecureCookies: false,
+    useSecureCookies: envVariables.NODE_ENV === "production",
     cookies: {
       state: {
         attributes: {
           httpOnly: true,
-          sameSite: "none",
-          secure: true,
+          sameSite: envVariables.NODE_ENV === "production" ? "none" : "lax",
+          secure: envVariables.NODE_ENV === "production",
           path: "/",
         },
       },
       sessionToken: {
         attributes: {
           httpOnly: true,
-          sameSite: "none",
-          secure: true,
+          sameSite: envVariables.NODE_ENV === "production" ? "none" : "lax",
+          secure: envVariables.NODE_ENV === "production",
           path: "/",
         },
       },

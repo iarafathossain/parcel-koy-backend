@@ -4,6 +4,14 @@ import { envVariables } from "../config/env";
 import { cookieUtils } from "./cookie";
 import { jwtUtils } from "./jwt";
 
+const authCookieOptions = {
+  httpOnly: true,
+  secure: envVariables.NODE_ENV === "production",
+  sameSite:
+    envVariables.NODE_ENV === "production" ? ("none" as const) : ("lax" as const),
+  path: "/",
+};
+
 export const parseDurationToMs = (duration: string): number => {
   const parsedDuration = duration.trim().toLowerCase();
   const match = parsedDuration.match(/^(\d+)(ms|s|m|h|d)$/);
@@ -45,10 +53,7 @@ const getRefreshToken = (payload: JwtPayload) => {
 // Set Access token cookie
 const setAccessTokenCookie = (res: Response, token: string) => {
   cookieUtils.setCookie(res, "access_token", token, {
-    httpOnly: true,
-    secure: true,
-    sameSite: "none",
-    path: "/",
+    ...authCookieOptions,
     maxAge: parseDurationToMs(envVariables.ACCESS_TOKEN_COOKIE_MAX_AGE),
   });
 };
@@ -56,10 +61,7 @@ const setAccessTokenCookie = (res: Response, token: string) => {
 // Set Refresh token cookie
 const setRefreshTokenCookie = (res: Response, token: string) => {
   cookieUtils.setCookie(res, "refresh_token", token, {
-    httpOnly: true,
-    secure: true,
-    sameSite: "none",
-    path: "/",
+    ...authCookieOptions,
     maxAge: parseDurationToMs(envVariables.REFRESH_TOKEN_COOKIE_MAX_AGE),
   });
 };
@@ -67,10 +69,7 @@ const setRefreshTokenCookie = (res: Response, token: string) => {
 // Set better auth session token cookie
 const setBetterAuthSessionTokenCookie = (res: Response, token: string) => {
   cookieUtils.setCookie(res, "better-auth.session_token", token, {
-    httpOnly: true,
-    secure: true,
-    sameSite: "none",
-    path: "/",
+    ...authCookieOptions,
     maxAge: parseDurationToMs(envVariables.BETTER_AUTH_SESSION_COOKIE_MAX_AGE),
   });
 };

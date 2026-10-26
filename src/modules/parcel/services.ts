@@ -315,7 +315,7 @@ const createParcel = async (payload: CreateParcelPayload, userId: string) => {
   if (projectedBalance < Number(merchant.creditLimit)) {
     throw new AppError(
       status.PAYMENT_REQUIRED,
-      `Credit limit exceeded. Your balance is ${merchant.balance} USD. This delivery costs ${deliveryCharge.price} USD. Please recharge your account or wait for pending deliveries to complete.`,
+      `Credit limit exceeded. Your balance is ${merchant.balance} BDT. This delivery costs ${deliveryCharge.price} BDT. Please recharge your account or wait for pending deliveries to complete.`,
     );
   }
 
