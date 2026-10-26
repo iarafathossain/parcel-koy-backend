@@ -9,8 +9,9 @@ let server: Server;
 const main = async () => {
   try {
     await prisma.$connect();
-    await seedSuperAdmin();
     console.log("✅Database connected successfully.");
+    await seedSuperAdmin();
+    console.log("✅Super Admin seeded successfully.");
     server = app.listen(envVariables.PORT, () => {
       console.log(`Server is running on port ${envVariables.PORT}`);
     });

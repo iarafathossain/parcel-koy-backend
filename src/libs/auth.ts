@@ -123,21 +123,23 @@ export const auth = betterAuth({
     },
   },
   advanced: {
-    useSecureCookies: false,
+    useSecureCookies: envVariables.NODE_ENV === "production",
     cookies: {
       state: {
         attributes: {
           httpOnly: true,
-          sameSite: "none",
-          secure: true,
+          sameSite:
+            envVariables.NODE_ENV === "production" ? "none" : "lax",
+          secure: envVariables.NODE_ENV === "production",
           path: "/",
         },
       },
       sessionToken: {
         attributes: {
           httpOnly: true,
-          sameSite: "none",
-          secure: true,
+          sameSite:
+            envVariables.NODE_ENV === "production" ? "none" : "lax",
+          secure: envVariables.NODE_ENV === "production",
           path: "/",
         },
       },
