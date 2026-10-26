@@ -32,6 +32,115 @@ ParcelKoy enables multiple operational roles (Super Admin, Admin, Merchant, Ride
 
 ---
 
+## 🚚 Delivery Flow Overview
+
+The parcel delivery lifecycle follows the flow below:
+
+```text
+Merchant Creates Parcel
+        │
+        ▼
+Select Pickup Method
+        │
+        ├──► Merchant Pickup
+        │       │
+        │       ▼
+        │   Hub Manager Assigns Pickup Rider
+        │       │
+        │       ▼
+        │   Rider Picks Up Parcel
+        │       │
+        │       ▼
+        │   Rider Hands Parcel to Origin Hub
+        │
+        └──► Drop Off
+                │
+                ▼
+        Merchant Drops Parcel at Origin Hub
+                │
+                ▼
+        ┌──────────────────────┐
+        │  Origin Hub Receives │
+        │        Parcel        │
+        └──────────┬───────────┘
+                   │
+                   ▼
+        Send to Destination Hub
+             (In Transit)
+                   │
+                   ▼
+       Destination Hub Receives
+                Parcel
+                   │
+                   ▼
+       Hub Manager Assigns
+          Delivery Rider
+                   │
+                   ▼
+       Rider Takes Parcel
+         for Delivery
+                   │
+                   ▼
+       Rider Sends Delivery OTP
+                   │
+                   ▼
+       Rider Verifies OTP
+                   │
+                   ▼
+           Parcel Delivered
+                   │
+                   ▼
+       Merchant Requests COD
+             Settlement
+                   │
+                   ▼
+       Hub Manager Disburses
+            COD via Stripe
+                   │
+                   ▼
+              Completed
+```
+
+### 💳 Merchant Credit Limit
+
+```text
+Hub Manager Sets Merchant Credit Limit
+                    │
+                    ▼
+          Merchant Creates Parcel
+                    │
+                    ▼
+        Credit Limit Exceeded?
+              │            │
+             No           Yes
+              │            │
+              ▼            ▼
+      Pickup Request    Pickup Request
+         Allowed          Blocked
+                              │
+                              ▼
+                    Merchant Clears /
+                    Reduces Balance
+                              │
+                              ▼
+                    Pickup Request Allowed
+```
+
+### 🏢 Hub Manager Assignment
+
+```text
+Super Admin / Admin
+        │
+        ▼
+Select an Admin
+        │
+        ▼
+Assign Admin as Hub Manager
+        │
+        ▼
+Admin Manages Assigned Hub
+```
+
 ## 🛠 Tech Stack
 
 **Core Language & Runtime**

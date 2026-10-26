@@ -115,11 +115,11 @@ export const auth = betterAuth({
     }),
   ],
   session: {
-    expiresIn: 60 * 60 * 60 * 24, // 1 day in second
-    updateAge: 60 * 60 * 60 * 24, // 1 day in second
+    expiresIn: 60 * 60 * 24, // 1 day in second
+    updateAge: 60 * 60 * 24, // 1 day in second
     cookieCache: {
       enabled: true,
-      maxAge: 60 * 60 * 60 * 24, // 1 day in second
+      maxAge: 60 * 60 * 24, // 1 day in second
     },
   },
   advanced: {
@@ -128,8 +128,7 @@ export const auth = betterAuth({
       state: {
         attributes: {
           httpOnly: true,
-          sameSite:
-            envVariables.NODE_ENV === "production" ? "none" : "lax",
+          sameSite: envVariables.NODE_ENV === "production" ? "none" : "lax",
           secure: envVariables.NODE_ENV === "production",
           path: "/",
         },
@@ -137,8 +136,7 @@ export const auth = betterAuth({
       sessionToken: {
         attributes: {
           httpOnly: true,
-          sameSite:
-            envVariables.NODE_ENV === "production" ? "none" : "lax",
+          sameSite: envVariables.NODE_ENV === "production" ? "none" : "lax",
           secure: envVariables.NODE_ENV === "production",
           path: "/",
         },
