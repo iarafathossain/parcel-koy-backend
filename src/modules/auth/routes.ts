@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { Role } from "../../generated/prisma/enums";
 import { checkAuth } from "../../middlewares/check-auth";
+import { imageUpload } from "../../middlewares/upload";
 import { validateRequest } from "../../middlewares/validate-request";
 import { authControllers } from "./controllers";
 import {
@@ -42,6 +43,14 @@ router.get(
   "/me",
   checkAuth(Role.ADMIN, Role.MERCHANT, Role.RIDER, Role.SUPER_ADMIN),
   authControllers.getMe,
+);
+
+// PATCH: api/v1/auth/avatar (update the current user's avatar)
+router.patch(
+  "/avatar",
+  checkAuth(Role.ADMIN, Role.MERCHANT, Role.RIDER, Role.SUPER_ADMIN),
+  imageUpload.single("avatar"),
+  authControllers.updateAvatar,
 );
 
 // GET: api/v1/auth/refresh-tokens (get new access and refresh tokens)

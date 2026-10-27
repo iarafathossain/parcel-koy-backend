@@ -96,6 +96,26 @@ const getMe = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const updateAvatar = catchAsync(async (req: Request, res: Response) => {
+  if (!req.user) {
+    throw new AppError(status.UNAUTHORIZED, "Unauthorized access");
+  }
+
+  const file = req.file as Express.MulterS3.File | undefined;
+  if (!file?.key) {
+    throw new AppError(status.BAD_REQUEST, "Avatar image is required");
+  }
+
+  const result = await authServices.updateAvatar(req.user.userId, file.location);
+
+  sendResponse(res, {
+    httpStatusCode: status.OK,
+    success: true,
+    message: "Avatar updated successfully",
+    data: result,
+  });
+});
+
 const getNewTokens = catchAsync(async (req: Request, res: Response) => {
   const refreshToken = req.cookies.refresh_token;
   if (!refreshToken) {
@@ -250,6 +270,7 @@ export const authControllers = {
   verifyEmail,
   loginUser,
   getMe,
+  updateAvatar,
   getNewTokens,
   logout,
   changePassword,

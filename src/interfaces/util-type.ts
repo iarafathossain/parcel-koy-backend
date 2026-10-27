@@ -55,6 +55,15 @@ export interface IEnvConfig {
 
   CLEAR_DUE_PAYMENT_SUCCESS_URL: string;
   CLEAR_DUE_PAYMENT_CANCEL_URL: string;
+
+  AWS: {
+    AWS_REGION: string;
+    AWS_ACCESS_KEY_ID: string;
+    AWS_SECRET_ACCESS_KEY: string;
+    S3: {
+      S3_BUCKET_NAME: string;
+    };
+  };
 }
 
 export interface IErrorSource {

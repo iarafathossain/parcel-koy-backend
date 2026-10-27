@@ -5,6 +5,7 @@ export interface IJwtPayload {
   email: string;
   role: Role;
   name: string;
+  image: string | null;
   status: UserStatus;
   isDeleted: boolean;
   emailVerified: boolean;

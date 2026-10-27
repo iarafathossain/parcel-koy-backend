@@ -37,6 +37,10 @@ const loadEnvironmentVariables = (): IEnvConfig => {
     "OTP_EXPIRATION_MINUTES",
     "CLEAR_DUE_PAYMENT_SUCCESS_URL",
     "CLEAR_DUE_PAYMENT_CANCEL_URL",
+    "AWS_REGION",
+    "AWS_ACCESS_KEY_ID",
+    "AWS_SECRET_ACCESS_KEY",
+    "S3_BUCKET_NAME",
   ];
 
   requiredEnvVars.forEach((variable) => {
@@ -87,6 +91,14 @@ const loadEnvironmentVariables = (): IEnvConfig => {
     OTP_EXPIRATION_MINUTES: process.env.OTP_EXPIRATION_MINUTES!,
     CLEAR_DUE_PAYMENT_SUCCESS_URL: process.env.CLEAR_DUE_PAYMENT_SUCCESS_URL!,
     CLEAR_DUE_PAYMENT_CANCEL_URL: process.env.CLEAR_DUE_PAYMENT_CANCEL_URL!,
+    AWS: {
+      AWS_REGION: process.env.AWS_REGION!,
+      AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID!,
+      AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY!,
+      S3: {
+        S3_BUCKET_NAME: process.env.S3_BUCKET_NAME!,
+      },
+    },
   };
 };
 
