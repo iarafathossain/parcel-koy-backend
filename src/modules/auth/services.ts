@@ -134,6 +134,7 @@ const registerMerchant = async (payload: RegisterMerchantZodSchema) => {
           email: user.email,
           role: user.role,
           name: user.name,
+          image: user.image,
           status: user.status,
           isDeleted: user.isDeleted,
           emailVerified: user.emailVerified,
@@ -147,6 +148,7 @@ const registerMerchant = async (payload: RegisterMerchantZodSchema) => {
           email: user.email,
           role: user.role,
           name: user.name,
+          image: user.image,
           status: user.status,
           isDeleted: user.isDeleted,
           emailVerified: user.emailVerified,
@@ -201,6 +203,7 @@ const verifyEmail = async (payload: VerifyEmailZodSchema) => {
         email: result.user.email,
         role: result.user.role,
         name: result.user.name,
+        image: result.user.image,
         status: result.user.status,
         isDeleted: result.user.isDeleted,
         emailVerified: result.user.emailVerified,
@@ -214,6 +217,7 @@ const verifyEmail = async (payload: VerifyEmailZodSchema) => {
         email: result.user.email,
         role: result.user.role,
         name: result.user.name,
+        image: result.user.image,
         status: result.user.status,
         isDeleted: result.user.isDeleted,
         emailVerified: result.user.emailVerified,
@@ -282,6 +286,7 @@ const loginUser = async (payload: LoginUserZodSchema) => {
     email: user.email,
     role: user.role,
     name: user.name,
+    image: user.image,
     status: user.status,
     isDeleted: user.isDeleted,
     emailVerified: user.emailVerified,
@@ -293,6 +298,7 @@ const loginUser = async (payload: LoginUserZodSchema) => {
     email: user.email,
     role: user.role,
     name: user.name,
+    image: user.image,
     status: user.status,
     isDeleted: user.isDeleted,
     emailVerified: user.emailVerified,
@@ -330,6 +336,17 @@ const getMe = async (user: IRequestUser) => {
   }
 
   return isUserExist;
+};
+
+const updateAvatar = async (userId: string, image: string) => {
+  return prisma.user.update({
+    where: { id: userId },
+    data: { image },
+    select: {
+      id: true,
+      image: true,
+    },
+  });
 };
 
 const activateUser = async (
@@ -441,6 +458,7 @@ const getNewTokens = async (refreshToken: string, sessionToken: string) => {
     email: verifiedUser.email,
     role: verifiedUser.role,
     name: verifiedUser.name,
+    image: existingSessiontoken.user.image,
     status: verifiedUser.status,
     isDeleted: verifiedUser.isDeleted,
     emailVerified: verifiedUser.emailVerified,
@@ -452,6 +470,7 @@ const getNewTokens = async (refreshToken: string, sessionToken: string) => {
     email: verifiedUser.email,
     role: verifiedUser.role,
     name: verifiedUser.name,
+    image: existingSessiontoken.user.image,
     status: verifiedUser.status,
     isDeleted: verifiedUser.isDeleted,
     emailVerified: verifiedUser.emailVerified,
@@ -526,6 +545,7 @@ const changePassword = async (
     email: existingSessionToken.user.email,
     role: existingSessionToken.user.role,
     name: existingSessionToken.user.name,
+    image: existingSessionToken.user.image,
     status: existingSessionToken.user.status,
     isDeleted: existingSessionToken.user.isDeleted,
     emailVerified: existingSessionToken.user.emailVerified,
@@ -537,6 +557,7 @@ const changePassword = async (
     email: existingSessionToken.user.email,
     role: existingSessionToken.user.role,
     name: existingSessionToken.user.name,
+    image: existingSessionToken.user.image,
     status: existingSessionToken.user.status,
     isDeleted: existingSessionToken.user.isDeleted,
     emailVerified: existingSessionToken.user.emailVerified,
@@ -601,6 +622,7 @@ export const authServices = {
   verifyEmail,
   loginUser,
   getMe,
+  updateAvatar,
   getNewTokens,
   logout,
   changePassword,
