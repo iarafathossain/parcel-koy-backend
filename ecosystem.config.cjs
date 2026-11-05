@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: "parcelkoy - backend",
+      name: "parcelkoy-backend",
       script: "dist/src/server.js",
       cwd: __dirname,
       instances: 1,
