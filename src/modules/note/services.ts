@@ -1,7 +1,7 @@
 import status from "http-status";
-import AppError from "../../errors/app-error";
-import { prisma } from "../../libs/prisma";
-import { CreateNotePayload, UpdateNotePayload } from "./validators";
+import AppError from "../../errors/app-error.js";
+import { prisma } from "../../libs/prisma.js";
+import { CreateNotePayload, UpdateNotePayload } from "./validators.js";
 
 const addNote = async (payload: CreateNotePayload, userId: string) => {
   const parcel = await prisma.parcel.findUnique({

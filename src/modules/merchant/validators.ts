@@ -1,5 +1,5 @@
 import * as zod from "zod";
-import { Gender } from "../../generated/prisma/enums";
+import { Gender } from "../../generated/prisma/enums.js";
 
 export const updateMerchantProfileZodSchema = zod
   .object({

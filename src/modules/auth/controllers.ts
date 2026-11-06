@@ -1,13 +1,13 @@
 import { Request, Response } from "express";
 import status from "http-status";
-import { envVariables } from "../../config/env";
-import AppError from "../../errors/app-error";
-import { catchAsync } from "../../shared/catch-async";
-import { sendResponse } from "../../shared/send-response";
-import { cookieUtils } from "../../utils/cookie";
-import { tokenUtils } from "../../utils/token";
-import { authServices } from "./services";
-import { ForgotPasswordZodSchema } from "./validators";
+import { envVariables } from "../../config/env.js";
+import AppError from "../../errors/app-error.js";
+import { catchAsync } from "../../shared/catch-async.js";
+import { sendResponse } from "../../shared/send-response.js";
+import { cookieUtils } from "../../utils/cookie.js";
+import { tokenUtils } from "../../utils/token.js";
+import { authServices } from "./services.js";
+import { ForgotPasswordZodSchema } from "./validators.js";
 
 const authCookieOptions = {
   httpOnly: true,

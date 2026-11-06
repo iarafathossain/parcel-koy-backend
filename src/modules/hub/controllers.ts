@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
 import status from "http-status";
-import AppError from "../../errors/app-error";
-import { IQueryParams } from "../../interfaces/query-type";
-import { catchAsync } from "../../shared/catch-async";
-import { sendResponse } from "../../shared/send-response";
-import { hubService } from "./services";
+import AppError from "../../errors/app-error.js";
+import { IQueryParams } from "../../interfaces/query-type.js";
+import { catchAsync } from "../../shared/catch-async.js";
+import { sendResponse } from "../../shared/send-response.js";
+import { hubService } from "./services.js";
 
 const createHub = catchAsync(async (req: Request, res: Response) => {
   const payload = req.body;

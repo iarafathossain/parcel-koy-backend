@@ -1,5 +1,5 @@
 import * as zod from "zod";
-import { MethodType } from "../../generated/prisma/enums";
+import { MethodType } from "../../generated/prisma/enums.js";
 
 export const createMethodZodSchema = zod.object({
   name: zod

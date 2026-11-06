@@ -1,8 +1,8 @@
 import status from "http-status";
-import AppError from "../../errors/app-error";
-import { prisma } from "../../libs/prisma";
-import { getSlug } from "../../utils/get-slug";
-import { CreateZonePayload, UpdateZonePayload } from "./validators";
+import AppError from "../../errors/app-error.js";
+import { prisma } from "../../libs/prisma.js";
+import { getSlug } from "../../utils/get-slug.js";
+import { CreateZonePayload, UpdateZonePayload } from "./validators.js";
 
 const createZone = async (payload: CreateZonePayload) => {
   const slug = getSlug(payload.name);

@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
 import status from "http-status";
-import AppError from "../../errors/app-error";
-import { catchAsync } from "../../shared/catch-async";
-import { sendResponse } from "../../shared/send-response";
-import { zoneService } from "./services";
+import AppError from "../../errors/app-error.js";
+import { catchAsync } from "../../shared/catch-async.js";
+import { sendResponse } from "../../shared/send-response.js";
+import { zoneService } from "./services.js";
 
 const createZone = catchAsync(async (req: Request, res: Response) => {
   const payload = req.body;

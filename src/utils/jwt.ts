@@ -1,5 +1,5 @@
 import jwt, { JwtPayload, SignOptions } from "jsonwebtoken";
-import { IJwtPayload } from "../interfaces/auth-type";
+import { IJwtPayload } from "../interfaces/auth-type.js";
 
 const createToken = (
   payload: JwtPayload,

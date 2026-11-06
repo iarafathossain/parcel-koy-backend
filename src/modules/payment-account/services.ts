@@ -1,9 +1,9 @@
 import status from "http-status";
 import Stripe from "stripe";
-import { envVariables } from "../../config/env";
-import AppError from "../../errors/app-error";
-import { IRequestUser } from "../../interfaces/auth-type";
-import { prisma } from "../../libs/prisma";
+import { envVariables } from "../../config/env.js";
+import AppError from "../../errors/app-error.js";
+import { IRequestUser } from "../../interfaces/auth-type.js";
+import { prisma } from "../../libs/prisma.js";
 
 const stripe = new Stripe(envVariables.STRIPE.STRIPE_SECRET_KEY);
 

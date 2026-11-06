@@ -1,9 +1,9 @@
 import { Router } from "express";
-import { Role } from "../../generated/prisma/enums";
-import { checkAuth } from "../../middlewares/check-auth";
-import { validateRequest } from "../../middlewares/validate-request";
-import { zoneControllers } from "./controllers";
-import { createZoneZodSchema, updateZoneZodSchema } from "./validators";
+import { Role } from "../../generated/prisma/enums.js";
+import { checkAuth } from "../../middlewares/check-auth.js";
+import { validateRequest } from "../../middlewares/validate-request.js";
+import { zoneControllers } from "./controllers.js";
+import { createZoneZodSchema, updateZoneZodSchema } from "./validators.js";
 
 const router = Router();
 

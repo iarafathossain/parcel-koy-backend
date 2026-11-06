@@ -1,12 +1,12 @@
 import { Router } from "express";
-import { Role } from "../../generated/prisma/enums";
-import { checkAuth } from "../../middlewares/check-auth";
-import { validateRequest } from "../../middlewares/validate-request";
-import { paymentAccountControllers } from "./controllers";
+import { Role } from "../../generated/prisma/enums.js";
+import { checkAuth } from "../../middlewares/check-auth.js";
+import { validateRequest } from "../../middlewares/validate-request.js";
+import { paymentAccountControllers } from "./controllers.js";
 import {
   stripeConnectOnboardingZodSchema,
   verifyStripeConnectZodSchema,
-} from "./validators";
+} from "./validators.js";
 
 const router = Router();
 

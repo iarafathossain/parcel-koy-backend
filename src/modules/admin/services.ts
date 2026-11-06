@@ -1,14 +1,14 @@
 import status from "http-status";
-import AppError from "../../errors/app-error";
-import { IRequestUser } from "../../interfaces/auth-type";
-import { IQueryParams } from "../../interfaces/query-type";
-import { prisma } from "../../libs/prisma";
-import { QueryBuilder } from "../../utils/query-builder";
+import AppError from "../../errors/app-error.js";
+import { IRequestUser } from "../../interfaces/auth-type.js";
+import { IQueryParams } from "../../interfaces/query-type.js";
+import { prisma } from "../../libs/prisma.js";
+import { QueryBuilder } from "../../utils/query-builder.js";
 import {
   DeleteUserPayload,
   GetSingleAdminByEmailPayload,
   UpdateAdminProfilePayload,
-} from "./validators";
+} from "./validators.js";
 
 const updateAdminProfile = async (
   payload: UpdateAdminProfilePayload,

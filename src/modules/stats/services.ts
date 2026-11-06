@@ -1,14 +1,14 @@
 import status from "http-status";
-import AppError from "../../errors/app-error";
-import { Prisma } from "../../generated/prisma/client";
+import AppError from "../../errors/app-error.js";
+import { Prisma } from "../../generated/prisma/client.js";
 import {
   ParcelStatus,
   PayoutStatus,
   Role,
   UserStatus,
-} from "../../generated/prisma/enums";
-import { IRequestUser } from "../../interfaces/auth-type";
-import { prisma } from "../../libs/prisma";
+} from "../../generated/prisma/enums.js";
+import { IRequestUser } from "../../interfaces/auth-type.js";
+import { prisma } from "../../libs/prisma.js";
 import {
   getBarChartData,
   getParcelFinancialSummary,
@@ -17,7 +17,7 @@ import {
   getTotalCount,
   mergeWhere,
   toNumber,
-} from "./stats-utils";
+} from "./stats-utils.js";
 
 const getDashboardStats = async (user: IRequestUser) => {
   let stats;

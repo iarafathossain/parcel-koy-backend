@@ -4,13 +4,13 @@ import cors from "cors";
 import express, { Application } from "express";
 import path from "path";
 import qs from "qs";
-import { envVariables } from "./config/env";
-// import { startNotificationCleanupJob } from "./jobs/notification-cleanup";
-import { auth } from "./libs/auth";
-import { globalErrorHandler } from "./middlewares/global-error-handler";
-import { notFoundHandler } from "./middlewares/not-found";
-import { webhookControllers } from "./modules/webhook/controller";
-import { indexRoutes } from "./routes/index";
+import { envVariables } from "./config/env.js";
+// import { startNotificationCleanupJob } from "./jobs/notification-cleanup.js";
+import { auth } from "./libs/auth.js";
+import { globalErrorHandler } from "./middlewares/global-error-handler.js";
+import { notFoundHandler } from "./middlewares/not-found.js";
+import { webhookControllers } from "./modules/webhook/controller.js";
+import { indexRoutes } from "./routes/index.js";
 
 const app: Application = express();
 

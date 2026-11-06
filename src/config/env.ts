@@ -1,6 +1,6 @@
 import "dotenv/config";
-import { Gender } from "../generated/prisma/enums";
-import { IEnvConfig } from "../interfaces/util-type";
+import { Gender } from "../generated/prisma/enums.js";
+import { IEnvConfig } from "../interfaces/util-type.js";
 
 const loadEnvironmentVariables = (): IEnvConfig => {
   // required environment variables

@@ -1,5 +1,5 @@
 import cron from "node-cron";
-import { prisma } from "../libs/prisma";
+import { prisma } from "../libs/prisma.js";
 
 export const startNotificationCleanupJob = () => {
   cron.schedule("0 0 * * *", async () => {

@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
 import status from "http-status";
-import AppError from "../../errors/app-error";
-import { IQueryParams } from "../../interfaces/query-type";
-import { catchAsync } from "../../shared/catch-async";
-import { sendResponse } from "../../shared/send-response";
-import { payoutService } from "./services";
+import AppError from "../../errors/app-error.js";
+import { IQueryParams } from "../../interfaces/query-type.js";
+import { catchAsync } from "../../shared/catch-async.js";
+import { sendResponse } from "../../shared/send-response.js";
+import { payoutService } from "./services.js";
 
 const getAllPayouts = catchAsync(async (req: Request, res: Response) => {
   const queryParams = req.query as IQueryParams;

@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import Stripe from "stripe";
-import { envVariables } from "../../config/env";
-import { webhookServices } from "./service";
+import { envVariables } from "../../config/env.js";
+import { webhookServices } from "./service.js";
 
 const stripe = new Stripe(envVariables.STRIPE.STRIPE_SECRET_KEY);
 

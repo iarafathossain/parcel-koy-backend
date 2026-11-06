@@ -1,5 +1,5 @@
 import * as zod from "zod";
-import { ParcelStatus } from "../../generated/prisma/enums";
+import { ParcelStatus } from "../../generated/prisma/enums.js";
 
 export const createParcelZodSchema = zod.object({
   categoryId: zod.string().uuid("Invalid Category ID"),

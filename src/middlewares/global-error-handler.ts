@@ -1,18 +1,18 @@
 import { NextFunction, Request, Response } from "express";
 import status from "http-status";
 import * as zod from "zod";
-import { envVariables } from "../config/env";
-import AppError from "../errors/app-error";
-import { handleZodError } from "../errors/handle-zod-error";
+import { envVariables } from "../config/env.js";
+import AppError from "../errors/app-error.js";
+import { handleZodError } from "../errors/handle-zod-error.js";
 import {
   handlePrismaClientKnownRequestError,
   handlePrismaClientUnknownError,
   handlePrismaClientValidationError,
   handlerPrismaClientInitializationError,
   handlerPrismaClientRustPanicError,
-} from "../errors/prisma-error";
-import { Prisma } from "../generated/prisma/client";
-import { IErrorResponse, IErrorSource } from "../interfaces/util-type";
+} from "../errors/prisma-error.js";
+import { Prisma } from "../generated/prisma/client.js";
+import { IErrorResponse, IErrorSource } from "../interfaces/util-type.js";
 
 export const globalErrorHandler = (
   err: unknown,

@@ -1,5 +1,5 @@
 import zod from "zod";
-import { Gender } from "../../generated/prisma/enums";
+import { Gender } from "../../generated/prisma/enums.js";
 
 export const createAdminZodSchema = zod.object({
   password: zod

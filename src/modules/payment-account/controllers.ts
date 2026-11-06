@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
 import status from "http-status";
-import { envVariables } from "../../config/env";
-import AppError from "../../errors/app-error";
-import { catchAsync } from "../../shared/catch-async";
-import { sendResponse } from "../../shared/send-response";
-import { paymentAccountServices } from "./services";
+import { envVariables } from "../../config/env.js";
+import AppError from "../../errors/app-error.js";
+import { catchAsync } from "../../shared/catch-async.js";
+import { sendResponse } from "../../shared/send-response.js";
+import { paymentAccountServices } from "./services.js";
 
 const generateConnectLink = catchAsync(async (req: Request, res: Response) => {
   const user = req.user;

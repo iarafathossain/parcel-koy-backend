@@ -1,6 +1,6 @@
 import status from "http-status";
 import * as zod from "zod";
-import { IErrorResponse, IErrorSource } from "../interfaces/util-type";
+import { IErrorResponse, IErrorSource } from "../interfaces/util-type.js";
 
 export const handleZodError = (error: zod.ZodError): IErrorResponse => {
   const statusCode = status.BAD_REQUEST;

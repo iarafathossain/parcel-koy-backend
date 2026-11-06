@@ -1,7 +1,7 @@
 import express from "express";
-import { Role } from "../../generated/prisma/enums";
-import { checkAuth } from "../../middlewares/check-auth";
-import { notificationControllers } from "./controllers";
+import { Role } from "../../generated/prisma/enums.js";
+import { checkAuth } from "../../middlewares/check-auth.js";
+import { notificationControllers } from "./controllers.js";
 const router = express.Router();
 
 // GET: /api/v1/notifications/ -> Get all notifications for the logged-in user

@@ -1,5 +1,5 @@
 import { Response } from "express";
-import { IResponseData } from "../interfaces/util-type";
+import { IResponseData } from "../interfaces/util-type.js";
 
 export const sendResponse = <T>(
   res: Response,
