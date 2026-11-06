@@ -11,7 +11,7 @@ module.exports = {
       max_memory_restart: "1G",
       env: {
         NODE_ENV: "production",
-        PORT: 8000,
+        PORT: 5000,
       },
       out_file: "./logs/parcelkoy-backend-out.log",
       error_file: "./logs/parcelkoy-backend-error.log",
