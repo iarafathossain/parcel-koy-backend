@@ -5,7 +5,7 @@ import express, { Application } from "express";
 import path from "path";
 import qs from "qs";
 import { envVariables } from "./config/env";
-import { startNotificationCleanupJob } from "./jobs/notification-cleanup";
+// import { startNotificationCleanupJob } from "./jobs/notification-cleanup";
 import { auth } from "./libs/auth";
 import { globalErrorHandler } from "./middlewares/global-error-handler";
 import { notFoundHandler } from "./middlewares/not-found";
@@ -52,7 +52,7 @@ app.all("/api/auth/{*any}", toNodeHandler(auth));
 app.use("/api/v1", indexRoutes);
 
 // Start background cron jobs
-startNotificationCleanupJob();
+// startNotificationCleanupJob();
 
 // Root route renders an HTML file
 app.get("/", (_req, res) => {
