@@ -1,10 +1,10 @@
 import status from "http-status";
-import AppError from "../../errors/app-error";
-import { IQueryParams } from "../../interfaces/query-type";
-import { prisma } from "../../libs/prisma";
-import { getSlug } from "../../utils/get-slug";
-import { QueryBuilder } from "../../utils/query-builder";
-import { CreateCategoryPayload, UpdateCategoryPayload } from "./validators";
+import AppError from "../../errors/app-error.js";
+import { IQueryParams } from "../../interfaces/query-type.js";
+import { prisma } from "../../libs/prisma.js";
+import { getSlug } from "../../utils/get-slug.js";
+import { QueryBuilder } from "../../utils/query-builder.js";
+import { CreateCategoryPayload, UpdateCategoryPayload } from "./validators.js";
 
 const createCategory = async (payload: CreateCategoryPayload) => {
   const slug = getSlug(payload.name);

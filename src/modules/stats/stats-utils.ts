@@ -1,6 +1,6 @@
-import { Prisma } from "../../generated/prisma/client";
-import { ParcelStatus } from "../../generated/prisma/enums";
-import { prisma } from "../../libs/prisma";
+import { Prisma } from "../../generated/prisma/client.js";
+import { ParcelStatus } from "../../generated/prisma/enums.js";
+import { prisma } from "../../libs/prisma.js";
 
 const toNumber = (value: unknown): number => {
   if (value === null || value === undefined) {

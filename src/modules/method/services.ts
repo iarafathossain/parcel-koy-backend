@@ -1,10 +1,10 @@
 import status from "http-status";
-import AppError from "../../errors/app-error";
-import { IQueryParams } from "../../interfaces/query-type";
-import { prisma } from "../../libs/prisma";
-import { getSlug } from "../../utils/get-slug";
-import { QueryBuilder } from "../../utils/query-builder";
-import { CreateMethodPayload, UpdateMethodPayload } from "./validators";
+import AppError from "../../errors/app-error.js";
+import { IQueryParams } from "../../interfaces/query-type.js";
+import { prisma } from "../../libs/prisma.js";
+import { getSlug } from "../../utils/get-slug.js";
+import { QueryBuilder } from "../../utils/query-builder.js";
+import { CreateMethodPayload, UpdateMethodPayload } from "./validators.js";
 
 const createMethod = async (payload: CreateMethodPayload) => {
   const slug = getSlug(payload.name);

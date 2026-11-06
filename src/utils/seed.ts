@@ -1,7 +1,7 @@
-import { envVariables } from "../config/env";
-import { Role } from "../generated/prisma/enums";
-import { auth } from "../libs/auth";
-import { prisma } from "../libs/prisma";
+import { envVariables } from "../config/env.js";
+import { Role } from "../generated/prisma/enums.js";
+import { auth } from "../libs/auth.js";
+import { prisma } from "../libs/prisma.js";
 
 export const seedSuperAdmin = async () => {
   try {

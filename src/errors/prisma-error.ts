@@ -1,6 +1,6 @@
 import status from "http-status";
-import { Prisma } from "../generated/prisma/client";
-import { IErrorResponse, IErrorSource } from "../interfaces/util-type";
+import { Prisma } from "../generated/prisma/client.js";
+import { IErrorResponse, IErrorSource } from "../interfaces/util-type.js";
 
 const getStatusCodeFromPrismaError = (errorCode: string) => {
   // P2002: Unique constraint failed = 409 conflict

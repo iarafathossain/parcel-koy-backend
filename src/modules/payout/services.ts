@@ -1,15 +1,15 @@
 import status from "http-status";
 import Stripe from "stripe";
-import { envVariables } from "../../config/env";
-import AppError from "../../errors/app-error";
-import { Prisma } from "../../generated/prisma/client";
-import { PayoutStatus } from "../../generated/prisma/enums";
-import { IRequestUser } from "../../interfaces/auth-type";
-import { IQueryParams } from "../../interfaces/query-type";
-import { prisma } from "../../libs/prisma";
-import { QueryBuilder } from "../../utils/query-builder";
-import { notificationServices } from "../notification/services";
-import { RequestPayoutPayload } from "./validators";
+import { envVariables } from "../../config/env.js";
+import AppError from "../../errors/app-error.js";
+import { Prisma } from "../../generated/prisma/client.js";
+import { PayoutStatus } from "../../generated/prisma/enums.js";
+import { IRequestUser } from "../../interfaces/auth-type.js";
+import { IQueryParams } from "../../interfaces/query-type.js";
+import { prisma } from "../../libs/prisma.js";
+import { QueryBuilder } from "../../utils/query-builder.js";
+import { notificationServices } from "../notification/services.js";
+import { RequestPayoutPayload } from "./validators.js";
 
 const stripe = new Stripe(envVariables.STRIPE.STRIPE_SECRET_KEY);
 

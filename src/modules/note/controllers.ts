@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
 import status from "http-status";
-import AppError from "../../errors/app-error";
-import { catchAsync } from "../../shared/catch-async";
-import { sendResponse } from "../../shared/send-response";
-import { noteServices } from "./services";
+import AppError from "../../errors/app-error.js";
+import { catchAsync } from "../../shared/catch-async.js";
+import { sendResponse } from "../../shared/send-response.js";
+import { noteServices } from "./services.js";
 
 const addNote = catchAsync(async (req: Request, res: Response) => {
   const user = req.user;

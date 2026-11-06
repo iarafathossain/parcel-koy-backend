@@ -3,7 +3,7 @@ import { Request } from "express";
 import multer, { FileFilterCallback } from "multer";
 import multerS3 from "multer-s3";
 import path from "path";
-import { BUCKET, s3 } from "../config/s3";
+import { BUCKET, s3 } from "../config/s3.js";
 
 const ALLOWED_TYPES = [
   "image/jpeg",

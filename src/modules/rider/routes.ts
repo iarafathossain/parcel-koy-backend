@@ -1,13 +1,13 @@
 import { Router } from "express";
-import { Role } from "../../generated/prisma/enums";
-import { checkAuth } from "../../middlewares/check-auth";
-import { validateRequest } from "../../middlewares/validate-request";
-import { riderControllers } from "./controllers";
+import { Role } from "../../generated/prisma/enums.js";
+import { checkAuth } from "../../middlewares/check-auth.js";
+import { validateRequest } from "../../middlewares/validate-request.js";
+import { riderControllers } from "./controllers.js";
 import {
   getSingleRiderByEmailZodSchema,
   updateRiderHubZodSchema,
   updateRiderProfileZodSchema,
-} from "./validators";
+} from "./validators.js";
 
 const router = Router();
 

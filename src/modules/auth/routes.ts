@@ -1,9 +1,9 @@
 import { Router } from "express";
-import { Role } from "../../generated/prisma/enums";
-import { checkAuth } from "../../middlewares/check-auth";
-import { imageUpload } from "../../middlewares/upload";
-import { validateRequest } from "../../middlewares/validate-request";
-import { authControllers } from "./controllers";
+import { Role } from "../../generated/prisma/enums.js";
+import { checkAuth } from "../../middlewares/check-auth.js";
+import { imageUpload } from "../../middlewares/upload.js";
+import { validateRequest } from "../../middlewares/validate-request.js";
+import { authControllers } from "./controllers.js";
 import {
   activateUserZodSchema,
   blockUserZodSchema,
@@ -13,7 +13,7 @@ import {
   registerMerchantZodSchema,
   resetPasswordZodSchema,
   verifyEmailZodSchema,
-} from "./validators";
+} from "./validators.js";
 
 const router = Router();
 

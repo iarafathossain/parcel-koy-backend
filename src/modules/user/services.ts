@@ -1,10 +1,10 @@
 import status from "http-status";
-import AppError from "../../errors/app-error";
-import { getError } from "../../errors/get-error";
-import { Role } from "../../generated/prisma/enums";
-import { auth } from "../../libs/auth";
-import { prisma } from "../../libs/prisma";
-import { CreateAdminZodSchema, CreateRiderZodSchema } from "./validators";
+import AppError from "../../errors/app-error.js";
+import { getError } from "../../errors/get-error.js";
+import { Role } from "../../generated/prisma/enums.js";
+import { auth } from "../../libs/auth.js";
+import { prisma } from "../../libs/prisma.js";
+import { CreateAdminZodSchema, CreateRiderZodSchema } from "./validators.js";
 
 const createAdmin = async (payload: CreateAdminZodSchema) => {
   const { password, admin } = payload;

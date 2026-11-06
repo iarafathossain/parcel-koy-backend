@@ -1,10 +1,10 @@
 import status from "http-status";
-import AppError from "../../errors/app-error";
-import { IQueryParams } from "../../interfaces/query-type";
-import { prisma } from "../../libs/prisma";
-import { QueryBuilder } from "../../utils/query-builder";
-import { notificationServices } from "../notification/services";
-import { CollectCashPayload } from "./validators";
+import AppError from "../../errors/app-error.js";
+import { IQueryParams } from "../../interfaces/query-type.js";
+import { prisma } from "../../libs/prisma.js";
+import { QueryBuilder } from "../../utils/query-builder.js";
+import { notificationServices } from "../notification/services.js";
+import { CollectCashPayload } from "./validators.js";
 
 export const collectCash = async (
   userId: string,

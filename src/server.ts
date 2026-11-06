@@ -1,8 +1,8 @@
 import { Server } from "http";
-import app from "./app";
-import { envVariables } from "./config/env";
-import { prisma } from "./libs/prisma";
-import { seedSuperAdmin } from "./utils/seed";
+import app from "./app.js";
+import { envVariables } from "./config/env.js";
+import { prisma } from "./libs/prisma.js";
+import { seedSuperAdmin } from "./utils/seed.js";
 
 let server: Server;
 

@@ -1,12 +1,12 @@
 import status from "http-status";
-import { envVariables } from "../../config/env";
-import AppError from "../../errors/app-error";
-import { UserStatus } from "../../generated/prisma/enums";
-import { IRequestUser } from "../../interfaces/auth-type";
-import { auth } from "../../libs/auth";
-import { prisma } from "../../libs/prisma";
-import { jwtUtils } from "../../utils/jwt";
-import { parseDurationToMs, tokenUtils } from "../../utils/token";
+import { envVariables } from "../../config/env.js";
+import AppError from "../../errors/app-error.js";
+import { UserStatus } from "../../generated/prisma/enums.js";
+import { IRequestUser } from "../../interfaces/auth-type.js";
+import { auth } from "../../libs/auth.js";
+import { prisma } from "../../libs/prisma.js";
+import { jwtUtils } from "../../utils/jwt.js";
+import { parseDurationToMs, tokenUtils } from "../../utils/token.js";
 import {
   ActivateUserPayload,
   BlockUserPayload,
@@ -16,7 +16,7 @@ import {
   RegisterMerchantZodSchema,
   ResetPasswordZodSchema,
   VerifyEmailZodSchema,
-} from "./validators";
+} from "./validators.js";
 
 const checkUser = async (email: string) => {
   // check if the user exists with the given email

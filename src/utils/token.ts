@@ -1,8 +1,8 @@
 import { Response } from "express";
 import { JwtPayload, SignOptions } from "jsonwebtoken";
-import { envVariables } from "../config/env";
-import { cookieUtils } from "./cookie";
-import { jwtUtils } from "./jwt";
+import { envVariables } from "../config/env.js";
+import { cookieUtils } from "./cookie.js";
+import { jwtUtils } from "./jwt.js";
 
 const authCookieOptions = {
   httpOnly: true,

@@ -1,20 +1,20 @@
 import status from "http-status";
-import { envVariables } from "../../config/env";
-import AppError from "../../errors/app-error";
-import { ParcelStatus } from "../../generated/prisma/enums";
-import { IQueryParams } from "../../interfaces/query-type";
-import { prisma } from "../../libs/prisma";
-import { generateTrackingID } from "../../utils/generate-tracking-id";
-import { QueryBuilder } from "../../utils/query-builder";
-import { parseDurationToMs } from "../../utils/token";
-import { notificationServices } from "../notification/services";
+import { envVariables } from "../../config/env.js";
+import AppError from "../../errors/app-error.js";
+import { ParcelStatus } from "../../generated/prisma/enums.js";
+import { IQueryParams } from "../../interfaces/query-type.js";
+import { prisma } from "../../libs/prisma.js";
+import { generateTrackingID } from "../../utils/generate-tracking-id.js";
+import { QueryBuilder } from "../../utils/query-builder.js";
+import { parseDurationToMs } from "../../utils/token.js";
+import { notificationServices } from "../notification/services.js";
 import {
   CancelParcelByMerchantPayload,
   CreateParcelPayload,
   UpdateParcelPayload,
   UpdateParcelStatusByAdminPayload,
   UpdateParcelStatusByRiderPayload,
-} from "./validators";
+} from "./validators.js";
 
 const resolveHubIdForStatus = (
   statusValue: ParcelStatus,
