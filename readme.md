@@ -3,7 +3,7 @@
 ## Links
 
 - Backend Repo: https://github.com/iarafathossain/parcel-koy-backend
-- Backend Live All APIs References: https://parcel-koy-backend-1.onrender.com/
+- Backend Live All APIs References: https://api.parcelkoy.live/
 
 ## Demo Access (Super Admin)
 
